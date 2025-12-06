@@ -1,0 +1,620 @@
+// Prisma Schema for Conversure
+// PostgreSQL database for UAE Real Estate SaaS
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// COMPANY & USER MODELS
+// ============================================
+
+model Company {
+  id                    String   @id @default(cuid())
+  name                  String
+  domain                String?
+  country               String   @default("UAE")
+  city                  String?
+  
+  stripeCustomerId      String?  @unique
+  stripeSubscriptionId  String?
+  plan                  Plan     @default(STARTER)
+  subscriptionStatus    String?  // active | trialing | past_due | canceled
+  seats                 Int      @default(5)
+  currentPeriodEnd      DateTime?
+  
+  // WhatsApp Business API Integration
+  whatsappBusinessNumber String?
+  wabaProvider          String?  // e.g., "360dialog", "Twilio", "Meta Cloud"
+  wabaApiKey            String?  // Encrypted in production
+  wabaWebhookToken      String?
+  wabaStatus            WabaStatus @default(PENDING)
+  
+  // Bitrix24 CRM Integration
+  bitrixDomain          String?
+  bitrixWebhookUrl      String?
+  bitrixAccessToken     String?  // Encrypted in production
+  
+  // AI Integration
+  aiProvider            AiProvider @default(OPENAI)
+  aiTone                String?    // "formal", "friendly", "luxury"
+  aiLanguages           String?    // "en,ar"
+  aiEnabled             Boolean    @default(true)
+  
+  // Warm-up tracking
+  warmupStage           Int      @default(1) // Week number (1-4+)
+  
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  
+  // Relations
+  users                 User[]
+  leads                 Lead[]
+  conversations         Conversation[]
+  templates             Template[]
+  warmupPlans           WarmupPlan[]
+  agentQuotas           AgentQuota[]
+  whatsappNumbers       WhatsAppNumber[]
+  
+  paymentEvents         PaymentEvent[]
+  feedbacks             Feedback[]
+  feedbackTemplates     FeedbackTemplate[]
+  feedbackRequests      FeedbackRequest[]
+  campaigns             Campaign[]
+  contacts              Contact[]
+  importBatches         ImportBatch[]
+  companySettings       CompanySettings? // Added relation to CompanySettings
+  
+  @@index([whatsappBusinessNumber])
+}
+
+enum Plan {
+  STARTER
+  GROWTH
+  PRO
+  ENTERPRISE
+}
+
+enum WabaStatus {
+  PENDING
+  CONNECTED
+  WARMING_UP
+  ACTIVE
+  SUSPENDED
+  ERROR
+}
+
+enum AiProvider {
+  OPENAI
+  GEMINI
+}
+
+enum WhatsappProvider {
+  WABA       // WhatsApp Business API (Meta/360dialog/Twilio)
+  CHATWOOT   // Chatwoot (open source customer engagement platform)
+  EVOLUTION  // Evolution API (WhatsApp Web gateway)
+}
+
+model CompanySettings {
+  id                      String            @id @default(cuid())
+  companyId               String            @unique
+  whatsappProvider        WhatsappProvider  @default(WABA)
+  
+  // Chatwoot credentials (optional per company)
+  chatwootBaseUrl         String?
+  chatwootApiToken        String?  // Encrypted in production
+  chatwootAccountId       String?
+  chatwootInboxId         String?
+  
+  // Evolution API credentials (optional per company)
+  evolutionBaseUrl        String?
+  evolutionInstanceId     String?
+  evolutionApiToken       String?  // Encrypted in production
+  
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+  
+  company                 Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  @@index([companyId])
+}
+
+model User {
+  id           String   @id @default(cuid())
+  fullName     String
+  email        String   @unique
+  phone        String?
+  role         UserRole
+  passwordHash String
+  isActive     Boolean  @default(true)
+  
+  companyId    String
+  company      Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  // Relations
+  agentQuota      AgentQuota?
+  assignedLeads   Lead[]
+  conversations   Conversation[]
+  messages        Message[]
+  
+  feedbacks       Feedback[]
+  feedbackRequests FeedbackRequest[]
+  
+  @@index([email])
+  @@index([companyId])
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  COMPANY_ADMIN
+  AGENT
+}
+
+model AgentQuota {
+  id                String   @id @default(cuid())
+  agentId           String   @unique
+  agent             User     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  companyId         String
+  company           Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  dailyLimit        Int      @default(20)
+  messagesSentToday Int      @default(0)
+  resetAt           DateTime
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@index([agentId])
+}
+
+model WarmupPlan {
+  id                 String   @id @default(cuid())
+  companyId          String
+  company            Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  weekNumber         Int
+  maxMessagesPerDay  Int
+  isActive           Boolean  @default(true)
+  
+  createdAt          DateTime @default(now())
+  
+  @@index([companyId, weekNumber])
+}
+
+model Lead {
+  id            String       @id @default(cuid())
+  companyId     String
+  company       Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  agentId       String?
+  agent         User?        @relation(fields: [agentId], references: [id], onDelete: SetNull)
+  
+  name          String
+  phone         String
+  email         String?
+  source        String?      // e.g., "WhatsApp", "Bitrix24", "Web Form"
+  status        LeadStatus   @default(NEW)
+  tags          String[]     @default([])
+  
+  // Bitrix24 integration
+  bitrixLeadId  String?      @unique
+  bitrixDealId  String?
+  
+  // Real estate specific fields (optional)
+  budget        String?
+  propertyType  String?      // e.g., "Villa", "Apartment", "Townhouse"
+  location      String?
+  bedrooms      Int?
+  
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+  
+  // Relations
+  conversations Conversation[]
+  
+  feedbacks     Feedback[]
+  feedbackRequests FeedbackRequest[]
+  campaignRecipients CampaignRecipient[]
+  
+  @@index([companyId])
+  @@index([agentId])
+  @@index([phone])
+  @@index([bitrixLeadId])
+}
+
+enum LeadStatus {
+  NEW
+  HOT
+  WARM
+  COLD
+  FOLLOW_UP
+  VIEWING_SCHEDULED
+  OFFER_MADE
+  CLOSED_WON
+  CLOSED_LOST
+}
+
+model Conversation {
+  id              String            @id @default(cuid())
+  companyId       String
+  company         Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  leadId          String
+  lead            Lead              @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  
+  agentId         String?
+  agent           User?             @relation(fields: [agentId], references: [id], onDelete: SetNull)
+  
+  whatsappNumber  String
+  lastMessageAt   DateTime          @default(now())
+  lastDirection   MessageDirection  @default(INBOUND)
+  status          ConversationStatus @default(ACTIVE)
+  
+  chatwootConversationId String?  // Chatwoot conversation ID
+  evolutionChatId        String?  // Evolution chat identifier
+  
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  
+  // Relations
+  messages        Message[]
+  
+  @@index([companyId])
+  @@index([leadId])
+  @@index([agentId])
+  @@index([whatsappNumber])
+  @@index([chatwootConversationId]) // Index for Chatwoot lookups
+}
+
+enum ConversationStatus {
+  ACTIVE
+  PENDING
+  ARCHIVED
+  CLOSED
+}
+
+enum MessageDirection {
+  INBOUND
+  OUTBOUND
+}
+
+model Message {
+  id             String          @id @default(cuid())
+  conversationId String
+  conversation   Conversation    @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  
+  senderId       String?         // User ID if outbound
+  sender         User?           @relation(fields: [senderId], references: [id], onDelete: SetNull)
+  
+  direction      MessageDirection
+  contentType    ContentType     @default(TEXT)
+  body           String          @db.Text
+  
+  // WhatsApp specific
+  wabaMessageId  String?         @unique
+  templateName   String?         // If sent via WhatsApp template
+  
+  // Status tracking
+  sentAt         DateTime        @default(now())
+  deliveredAt    DateTime?
+  readAt         DateTime?
+  failedAt       DateTime?
+  errorMessage   String?
+  
+  createdAt      DateTime        @default(now())
+  
+  @@index([conversationId])
+  @@index([wabaMessageId])
+}
+
+enum ContentType {
+  TEXT
+  IMAGE
+  AUDIO
+  VIDEO
+  DOCUMENT
+  LOCATION
+  TEMPLATE
+}
+
+model Template {
+  id                String         @id @default(cuid())
+  companyId         String
+  company           Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  metaTemplateName  String         // Name registered with Meta/WABA provider
+  displayName       String
+  language          String         @default("en") // ISO code: en, ar
+  category          TemplateCategory
+  status            TemplateStatus @default(PENDING)
+  
+  bodyPreview       String         @db.Text
+  headerType        String?        // TEXT, IMAGE, VIDEO, DOCUMENT
+  footerText        String?
+  buttons           Json?          // Array of button objects
+  
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  
+  @@index([companyId])
+  @@unique([companyId, metaTemplateName])
+}
+
+enum TemplateCategory {
+  MARKETING
+  UTILITY
+  AUTHENTICATION
+}
+
+enum TemplateStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  DISABLED
+}
+
+model WhatsAppNumber {
+  id                  String   @id @default(cuid())
+  companyId           String
+  company             Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  number              String   @unique // E.164 format: +971501234567
+  label               String   @default("Main") // "Main", "Leasing", "Sales", etc.
+  provider            String   // "meta", "twilio", "360dialog", "chatwoot", "evolution"
+  
+  // Warm-up & quota management
+  dailyLimit          Int      @default(20)
+  messagesSentToday   Int      @default(0)
+  warmupWeek          Int      @default(1) // 1-4+
+  lastResetAt         DateTime @default(now())
+  
+  isActive            Boolean  @default(true)
+  
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  
+  // Relations
+  quotaLogs           QuotaLog[]
+  
+  @@index([companyId])
+  @@index([number])
+}
+
+model QuotaLog {
+  id                String         @id @default(cuid())
+  companyId         String
+  whatsappNumberId  String
+  whatsappNumber    WhatsAppNumber @relation(fields: [whatsappNumberId], references: [id], onDelete: Cascade)
+  
+  date              DateTime       // Date at midnight for daily tracking
+  sentCount         Int            @default(0)
+  dailyLimit        Int            // Snapshot of limit at that time
+  
+  createdAt         DateTime       @default(now())
+  
+  @@unique([whatsappNumberId, date])
+  @@index([companyId])
+  @@index([date])
+}
+
+model WebhookEvent {
+  id          String   @id @default(cuid())
+  companyId   String?
+  source      WebhookSource
+  eventType   String   // e.g., "message.inbound", "message.status", "lead.created"
+  payload     Json     // Full webhook payload
+  
+  processed   Boolean  @default(false)
+  processedAt DateTime?
+  error       String?  @db.Text
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([companyId])
+  @@index([source])
+  @@index([processed])
+}
+
+enum WebhookSource {
+  WHATSAPP
+  BITRIX
+  STRIPE
+  CHATWOOT   // Added Chatwoot as webhook source
+  EVOLUTION  // Added Evolution as webhook source
+}
+
+model BitrixSyncLog {
+  id          String          @id @default(cuid())
+  companyId   String
+  leadId      String?
+  
+  direction   SyncDirection
+  action      String          // "create", "update", "sync"
+  status      SyncStatus
+  message     String?         @db.Text
+  payload     Json?           // Request/response data
+  
+  createdAt   DateTime        @default(now())
+  
+  @@index([companyId])
+  @@index([leadId])
+  @@index([status])
+}
+
+enum SyncDirection {
+  TO_BITRIX
+  FROM_BITRIX
+}
+
+enum SyncStatus {
+  SUCCESS
+  FAILED
+  PENDING
+}
+
+model PaymentEvent {
+  id            String   @id @default(cuid())
+  company       Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId     String
+  stripeEventId String   @unique
+  type          String   // e.g., checkout.session.completed, invoice.paid
+  rawPayload    Json     // Full Stripe event payload
+  createdAt     DateTime @default(now())
+  
+  @@index([companyId])
+  @@index([type])
+}
+
+model FeedbackTemplate {
+  id        String   @id @default(cuid())
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId String
+
+  name      String
+  language  String   // "en" | "ar" | "en-ar"
+  body      String   @db.Text  // Template with placeholders like {{client_name}}
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([companyId])
+  @@index([language])
+}
+
+model FeedbackRequest {
+  id          String   @id @default(cuid())
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId   String
+
+  lead        Lead?    @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  leadId      String?  
+  
+  agent       User?    @relation(fields: [agentId], references: [id], onDelete: SetNull)
+  agentId     String?
+
+  phone       String
+  status      String   @default("pending") // pending | answered | expired
+  rating      Int?
+  comment     String?  @db.Text
+  
+  createdAt   DateTime @default(now())
+  requestedAt DateTime
+  respondedAt DateTime?
+
+  @@index([companyId])
+  @@index([leadId])
+  @@index([phone])
+  @@index([status])
+}
+
+model Feedback {
+  id          String   @id @default(cuid())
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId   String
+
+  agent       User     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  agentId     String
+
+  lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  leadId      String
+
+  rating      Int      // 1-5
+  comment     String?  @db.Text
+  source      String   @default("whatsapp") // whatsapp | manual
+  requestedAt DateTime
+  respondedAt DateTime?
+
+  createdAt   DateTime @default(now())
+  
+  @@index([companyId])
+  @@index([agentId])
+  @@index([leadId])
+  @@index([rating])
+}
+
+model Campaign {
+  id          String   @id @default(cuid())
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId   String
+
+  name        String
+  description String?  @db.Text
+  templateId  String   // Reference to WhatsApp template key
+  scheduledAt DateTime
+  status      String   @default("scheduled") // scheduled | running | completed | paused | failed
+
+  createdBy   String   // userId
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  recipients  CampaignRecipient[]
+  
+  @@index([companyId])
+  @@index([status])
+  @@index([scheduledAt])
+}
+
+model CampaignRecipient {
+  id          String   @id @default(cuid())
+  campaign    Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  campaignId  String
+
+  lead        Lead?    @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  leadId      String?
+
+  phone       String
+  name        String?
+  language    String?  // "en" | "ar"
+
+  status      String   @default("pending") // pending | sent | delivered | failed
+  lastError   String?  @db.Text
+  sentAt      DateTime?
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([campaignId])
+  @@index([status])
+  @@index([phone])
+}
+
+model Contact {
+  id          String   @id @default(cuid())
+  companyId   String
+  phone       String
+  name        String?
+  email       String?
+  language    String?  // "en" or "ar"
+  tags        String[] @default([])
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  @@unique([companyId, phone])
+  @@index([companyId])
+  @@index([phone])
+}
+
+model ImportBatch {
+  id          String   @id @default(cuid())
+  companyId   String
+  type        String   // "contacts" or "campaign"
+  fileName    String
+  rowCount    Int
+  createdAt   DateTime @default(now())
+  createdById String?
+
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  @@index([companyId])
+  @@index([type])
+}
