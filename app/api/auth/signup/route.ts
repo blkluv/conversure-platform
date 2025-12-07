@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create company and admin user in a transaction
-    const result = await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx: any) => {
       // Create company
       const company = await tx.company.create({
         data: {

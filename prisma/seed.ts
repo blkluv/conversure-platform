@@ -9,6 +9,53 @@ const prisma = new PrismaClient()
 async function main() {
   console.log("🌱 Seeding database...")
 
+  // Create Conversure base company for super admin
+  const conversureCompany = await prisma.company.upsert({
+    where: { id: "conversure-main" },
+    update: {
+      name: "Conversure",
+    },
+    create: {
+      id: "conversure-main",
+      name: "Conversure",
+      domain: "conversure.com",
+      country: "UAE",
+      city: "Dubai",
+      plan: "ENTERPRISE",
+      seats: 100,
+      whatsappBusinessNumber: "+971501111111",
+      wabaProvider: "Meta Cloud",
+      wabaStatus: "ACTIVE",
+      warmupStage: 4,
+    },
+  })
+
+  console.log("✅ Created Conversure company:", conversureCompany.name)
+
+  // Create SUPER ADMIN user - REQUIRED
+  const superAdminPassword = await bcrypt.hash("Abdallah@2021", 10)
+  const superAdmin = await prisma.user.upsert({
+    where: { email: "abdallah@betaedgetech.com" },
+    update: {
+      role: "SUPER_ADMIN",
+      isActive: true,
+      passwordHash: superAdminPassword,
+    },
+    create: {
+      fullName: "Abdallah - Super Admin",
+      email: "abdallah@betaedgetech.com",
+      phone: "+971501111111",
+      role: "SUPER_ADMIN",
+      passwordHash: superAdminPassword,
+      companyId: conversureCompany.id,
+      isActive: true,
+    },
+  })
+
+  console.log("✅ Created SUPER ADMIN:", superAdmin.email)
+  console.log("   Password: Abdallah@2021")
+  console.log("   Role:", superAdmin.role)
+
   // Create demo company
   const company = await prisma.company.upsert({
     where: { id: "demo-company-1" },
@@ -27,7 +74,7 @@ async function main() {
     },
   })
 
-  console.log("✅ Created company:", company.name)
+  console.log("✅ Created demo company:", company.name)
 
   // Create admin user
   const adminPassword = await bcrypt.hash("Admin@123", 10)
@@ -44,7 +91,7 @@ async function main() {
     },
   })
 
-  console.log("✅ Created admin:", admin.email, "/ Password: Admin@123")
+  console.log("✅ Created demo admin:", admin.email, "/ Password: Admin@123")
 
   // Create agent user
   const agentPassword = await bcrypt.hash("Agent@123", 10)

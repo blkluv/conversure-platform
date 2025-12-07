@@ -2,7 +2,6 @@
 import { prisma } from "@/lib/db"
 import * as bcrypt from "bcryptjs"
 import { cookies } from "next/headers"
-import type { User } from "@prisma/client"
 
 export interface SessionUser {
   id: string
@@ -10,6 +9,17 @@ export interface SessionUser {
   fullName: string
   role: string
   companyId: string
+}
+
+// Define User type manually since Prisma client may not be generated yet
+interface User {
+  id: string
+  email: string
+  fullName: string
+  role: string
+  companyId: string
+  passwordHash: string
+  isActive: boolean
 }
 
 // Session management using HTTP-only cookies

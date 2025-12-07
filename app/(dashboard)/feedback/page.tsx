@@ -39,12 +39,14 @@ async function getFeedbackData(companyId: string) {
     }
   >()
 
-  feedbacks.forEach((feedback) => {
+  // ✅ Explicit type on feedback param
+  feedbacks.forEach((feedback: any) => {
     const existing = agentStats.get(feedback.agentId)
     if (existing) {
       existing.totalFeedback++
       existing.ratings.push(feedback.rating)
-      existing.avgRating = existing.ratings.reduce((a, b) => a + b, 0) / existing.ratings.length
+      existing.avgRating =
+        existing.ratings.reduce((a: number, b: number) => a + b, 0) / existing.ratings.length
     } else {
       agentStats.set(feedback.agentId, {
         agentId: feedback.agentId,
@@ -56,16 +58,26 @@ async function getFeedbackData(companyId: string) {
     }
   })
 
-  const agentStatsArray = Array.from(agentStats.values()).sort((a, b) => b.avgRating - a.avgRating)
+  const agentStatsArray = Array.from(agentStats.values()).sort(
+    (a, b) => b.avgRating - a.avgRating,
+  )
 
-  const negativeFeedback = feedbacks.filter((f) => f.rating <= 3 && f.respondedAt).slice(0, 10)
+  // ✅ Add types to callback params
+  const negativeFeedback = feedbacks
+    .filter((f: any) => f.rating <= 3 && f.respondedAt)
+    .slice(0, 10)
 
-  const totalFeedback = feedbacks.filter((f) => f.respondedAt).length
+  const totalFeedback = feedbacks.filter((f: any) => f.respondedAt).length
+
   const avgRatingOverall =
-    totalFeedback > 0 ? feedbacks.filter((f) => f.respondedAt).reduce((sum, f) => sum + f.rating, 0) / totalFeedback : 0
+    totalFeedback > 0
+      ? feedbacks
+          .filter((f: any) => f.respondedAt)
+          .reduce((sum: number, f: any) => sum + f.rating, 0) / totalFeedback
+      : 0
 
-  const promoters = feedbacks.filter((f) => f.respondedAt && f.rating >= 4).length
-  const detractors = feedbacks.filter((f) => f.respondedAt && f.rating <= 2).length
+  const promoters = feedbacks.filter((f: any) => f.respondedAt && f.rating >= 4).length
+  const detractors = feedbacks.filter((f: any) => f.respondedAt && f.rating <= 2).length
   const nps = totalFeedback > 0 ? ((promoters - detractors) / totalFeedback) * 100 : 0
 
   return {
@@ -205,7 +217,7 @@ async function FeedbackContent() {
             </div>
           ) : (
             <div className="space-y-4">
-              {data.negativeFeedback.map((feedback) => (
+              {data.negativeFeedback.map((feedback: any) => (
                 <div key={feedback.id} className="p-4 border rounded-lg space-y-2">
                   <div className="flex items-start justify-between">
                     <div>

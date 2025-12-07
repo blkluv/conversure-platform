@@ -22,12 +22,15 @@ async function getCampaigns(companyId: string) {
     take: 50,
   })
 
-  return campaigns.map((campaign) => ({
+  // Only adding types, logic is exactly the same
+  return campaigns.map((campaign: any) => ({
     ...campaign,
     totalRecipients: campaign.recipients.length,
-    sentCount: campaign.recipients.filter((r) => r.status === "sent" || r.status === "delivered").length,
-    failedCount: campaign.recipients.filter((r) => r.status === "failed").length,
-    pendingCount: campaign.recipients.filter((r) => r.status === "pending").length,
+    sentCount: campaign.recipients.filter(
+      (r: any) => r.status === "sent" || r.status === "delivered",
+    ).length,
+    failedCount: campaign.recipients.filter((r: any) => r.status === "failed").length,
+    pendingCount: campaign.recipients.filter((r: any) => r.status === "pending").length,
   }))
 }
 
@@ -85,7 +88,7 @@ async function CampaignsContent() {
         </Card>
       ) : (
         <div className="grid gap-4">
-          {campaigns.map((campaign) => {
+          {campaigns.map((campaign: any) => {
             const StatusIcon = statusIcons[campaign.status as keyof typeof statusIcons] || Clock
             const statusColor = statusColors[campaign.status as keyof typeof statusColors] || "bg-gray-500"
 

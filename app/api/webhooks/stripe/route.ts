@@ -98,9 +98,14 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     return
   }
 
-  const subscription = await stripe.subscriptions.retrieve(session.subscription as string)
-  const priceId = subscription.items.data[0]?.price.id
+  const subscriptionData = (await stripe.subscriptions.retrieve(session.subscription as string)) as any
+  const priceId = subscriptionData.items.data[0]?.price.id
   const plan = priceId ? getPlanFromStripePrice(priceId) : "STARTER"
+  
+  // Extract current_period_end safely
+  const currentPeriodEnd = subscriptionData.current_period_end 
+    ? new Date((subscriptionData.current_period_end as number) * 1000)
+    : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // Default to 30 days from now
 
   await db.company.update({
     where: { id: companyId },
@@ -109,7 +114,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
       stripeSubscriptionId: session.subscription as string,
       subscriptionStatus: "trialing",
       plan,
-      currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+      currentPeriodEnd,
     },
   })
 
@@ -130,6 +135,11 @@ async function handleSubscriptionChange(subscription: Stripe.Subscription) {
 
   const priceId = subscription.items.data[0]?.price.id
   const plan = priceId ? getPlanFromStripePrice(priceId) : company.plan
+  
+  // Extract current_period_end safely
+  const currentPeriodEnd = (subscription as any).current_period_end
+    ? new Date(((subscription as any).current_period_end as number) * 1000)
+    : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // Default to 30 days from now
 
   await db.company.update({
     where: { id: company.id },
@@ -137,7 +147,7 @@ async function handleSubscriptionChange(subscription: Stripe.Subscription) {
       stripeSubscriptionId: subscription.id,
       subscriptionStatus: subscription.status,
       plan,
-      currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+      currentPeriodEnd,
     },
   })
 

@@ -1,10 +1,13 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { stripe, getPriceIdForPlan } from "@/lib/stripe"
+import { stripe, getPriceIdForPlan, requireStripeConfig } from "@/lib/stripe"
 import { db } from "@/lib/db"
 import { getCurrentUser } from "@/lib/auth"
 
 export async function POST(req: NextRequest) {
   try {
+    // Check if Stripe is configured
+    requireStripeConfig()
+    
     const session = await getCurrentUser()
 
     if (!session) {

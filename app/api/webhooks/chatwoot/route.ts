@@ -67,7 +67,9 @@ export async function POST(request: NextRequest) {
         where: {
           companyId,
           leadId: {
-            in: (await db.lead.findMany({ where: { companyId, phone } })).map((l) => l.id),
+            in: (await db.lead.findMany({ where: { companyId, phone } })).map(
+              (l: { id: string }) => l.id
+            ),
           },
         },
         data: {

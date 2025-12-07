@@ -75,50 +75,50 @@ export async function POST(req: Request) {
 
     const contactsArray = Array.from(uniqueContacts.values())
 
-    const created = await db.$transaction(async (tx) => {
-      const results = []
+    const created = await db.$transaction(async (tx: any) => {
+  const results = []
 
-      for (const contact of contactsArray) {
-        const existing = await tx.contact.findUnique({
-          where: {
-            companyId_phone: {
-              companyId: contact.companyId,
-              phone: contact.phone,
-            },
-          },
-        })
+  for (const contact of contactsArray) {
+    const existing = await tx.contact.findUnique({
+      where: {
+        companyId_phone: {
+          companyId: contact.companyId,
+          phone: contact.phone,
+        },
+      },
+    })
 
-        if (existing) {
-          const updated = await tx.contact.update({
-            where: { id: existing.id },
-            data: {
-              name: contact.name || existing.name,
-              email: contact.email || existing.email,
-              language: contact.language || existing.language,
-              tags: contact.tags.length > 0 ? contact.tags : existing.tags,
-            },
-          })
-          results.push(updated)
-        } else {
-          const newContact = await tx.contact.create({
-            data: contact,
-          })
-          results.push(newContact)
-        }
-      }
-
-      await tx.importBatch.create({
+    if (existing) {
+      const updated = await tx.contact.update({
+        where: { id: existing.id },
         data: {
-          companyId: session.companyId,
-          type: "contacts",
-          fileName,
-          rowCount: results.length,
-          createdById: session.id,
+          name: contact.name || existing.name,
+          email: contact.email || existing.email,
+          language: contact.language || existing.language,
+          tags: contact.tags.length > 0 ? contact.tags : existing.tags,
         },
       })
+      results.push(updated)
+    } else {
+      const newContact = await tx.contact.create({
+        data: contact,
+      })
+      results.push(newContact)
+    }
+  }
 
-      return results
-    })
+  await tx.importBatch.create({
+    data: {
+      companyId: session.companyId,
+      type: "contacts",
+      fileName,
+      rowCount: results.length,
+      createdById: session.id,
+    },
+  })
+
+  return results
+})
 
     return NextResponse.json({
       success: true,

@@ -1,13 +1,25 @@
 import Stripe from "stripe"
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error("STRIPE_SECRET_KEY is not set in environment variables")
-}
+// Gracefully handle missing Stripe key - allow build to succeed
+const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || "sk_test_dummy_key_for_build_only"
+const isStripeConfigured = !!process.env.STRIPE_SECRET_KEY
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2024-11-20.acacia",
+export const stripe = new Stripe(STRIPE_SECRET_KEY, {
+  apiVersion: "2025-11-17.clover",
   typescript: true,
 })
+
+// Helper to check if Stripe is properly configured
+export function isStripeEnabled(): boolean {
+  return isStripeConfigured
+}
+
+// Helper to ensure Stripe is configured before operations
+export function requireStripeConfig(): void {
+  if (!isStripeConfigured) {
+    throw new Error("Stripe is not configured. Please set STRIPE_SECRET_KEY in your environment variables.")
+  }
+}
 
 export function getPriceIdForPlan(plan: string): string {
   const normalizedPlan = plan.toUpperCase()

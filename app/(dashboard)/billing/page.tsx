@@ -217,7 +217,7 @@ async function BillingContent() {
                 Manage Billing
               </Button>
             </form>
-            {company.plan !== "enterprise" && (
+            {company.plan !== "ENTERPRISE" && (
               <form action={handleUpgrade}>
                 <Button type="submit">
                   <ArrowUpRight className="w-4 h-4 mr-2" />

@@ -9,11 +9,44 @@ import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Search, MessageCircle } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
-import type { Conversation, Lead, Message } from "@prisma/client"
-
-interface ConversationWithDetails extends Conversation {
-  lead: Lead
-  messages: Message[]
+// Define types manually since Prisma client may not be generated yet
+interface ConversationWithDetails {
+  id: string
+  companyId: string
+  leadId: string
+  agentId: string | null
+  whatsappNumber: string
+  lastMessageAt: Date
+  lastDirection: string
+  status: string
+  chatwootConversationId: string | null
+  evolutionChatId: string | null
+  createdAt: Date
+  updatedAt: Date
+  lead: {
+    id: string
+    name: string
+    phone: string
+    email: string | null
+    status: string
+    tags: string[]
+  }
+  messages: Array<{
+    id: string
+    conversationId: string
+    senderId: string | null
+    direction: string
+    contentType: string
+    body: string
+    wabaMessageId: string | null
+    templateName: string | null
+    sentAt: Date
+    deliveredAt: Date | null
+    readAt: Date | null
+    failedAt: Date | null
+    errorMessage: string | null
+    createdAt: Date
+  }>
 }
 
 interface ConversationInboxProps {
@@ -31,7 +64,7 @@ export function ConversationInbox({ conversations, activeConversationId, agentQu
     const matchesSearch =
       conv.lead.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       conv.lead.phone.includes(searchQuery) ||
-      conv.lead.tags.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+      conv.lead.tags.some((tag: string) => tag.toLowerCase().includes(searchQuery.toLowerCase()))
 
     // Status filter
     let matchesFilter = true
@@ -154,7 +187,7 @@ export function ConversationInbox({ conversations, activeConversationId, agentQu
                           {lastMessage?.body || "No messages yet"}
                         </p>
                         <div className="flex gap-1 flex-wrap">
-                          {conversation.lead.tags.slice(0, 2).map((tag) => (
+                          {conversation.lead.tags.slice(0, 2).map((tag: string) => (
                             <Badge key={tag} variant="secondary" className="text-xs">
                               {tag}
                             </Badge>

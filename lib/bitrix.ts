@@ -115,7 +115,7 @@ export async function createBitrixLead(
         action: "create",
         status: "SUCCESS",
         message: `Lead created in Bitrix24: ${bitrixLeadId}`,
-        payload: { request: bitrixPayload, response: data },
+        payload: { request: bitrixPayload, response: data } as any,
       },
     })
 
@@ -448,12 +448,23 @@ async function triggerFeedbackRequest(companyId: string, dealId: string, dealDat
       },
     })
 
-    const feedbackMessage = `Hi ${lead.name}, thank you for viewing the property with ${lead.agent.fullName} from ${companyId}. On a scale of 1–5, how would you rate your experience? (1 = Poor, 5 = Excellent). You can also share any comments.`
+    const company = await db.company.findUnique({
+      where: { id: companyId },
+      select: { whatsappBusinessNumber: true, name: true },
+    })
+
+    if (!company || !company.whatsappBusinessNumber) {
+      console.log("[Bitrix] Cannot send feedback: WhatsApp number not configured")
+      return
+    }
+
+    const feedbackMessage = `Hi ${lead.name}, thank you for viewing the property with ${lead.agent.fullName} from ${company.name}. On a scale of 1–5, how would you rate your experience? (1 = Poor, 5 = Excellent). You can also share any comments.`
 
     const { sendWhatsAppMessage } = await import("@/lib/whatsapp")
 
     await sendWhatsAppMessage({
       to: lead.phone,
+      from: company.whatsappBusinessNumber,
       body: feedbackMessage,
       companyId,
       templateId: "feedback_after_viewing",

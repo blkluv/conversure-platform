@@ -1,79 +1,88 @@
+// Agent invitation API
 import { type NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
-import { requireAuth } from "@/lib/auth"
+import { requireRole, hashPassword } from "@/lib/auth"
 import { z } from "zod"
 
-const createCampaignSchema = z.object({
-  name: z.string().min(1),
-  description: z.string().optional(),
-  templateId: z.string().min(1),
-  scheduledAt: z.string().datetime(),
+const inviteSchema = z.object({
+  companyId: z.string(),
+  fullName: z.string().min(2),
+  email: z.string().email(),
+  phone: z.string().min(8),
+  dailyQuota: z.number().min(1).max(1000),
 })
 
-export async function POST(req: NextRequest) {
-  try {
-    const session = await requireAuth(req)
-
-    const body = await req.json()
-    const validated = createCampaignSchema.parse(body)
-
-    const campaign = await db.campaign.create({
-      data: {
-        companyId: session.companyId,
-        name: validated.name,
-        description: validated.description,
-        templateId: validated.templateId,
-        scheduledAt: new Date(validated.scheduledAt),
-        createdBy: session.id,
-      },
-    })
-
-    return NextResponse.json({ success: true, campaign })
-  } catch (error) {
-    console.error("[v0] Create campaign error:", error)
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to create campaign" },
-      { status: 500 },
-    )
+// Generate random password
+function generateTempPassword(): string {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789@#$"
+  let password = ""
+  for (let i = 0; i < 12; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length))
   }
+  return password
 }
 
-export async function GET(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const session = await requireAuth(req)
+    await requireRole(["COMPANY_ADMIN", "SUPER_ADMIN"])
 
-    const campaigns = await db.campaign.findMany({
-      where: {
-        companyId: session.companyId,
-      },
-      include: {
-        recipients: {
-          select: {
-            id: true,
-            status: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
+    const body = await request.json()
+    const data = inviteSchema.parse(body)
+
+    // Check if email already exists
+    const existingUser = await db.user.findUnique({
+      where: { email: data.email },
     })
 
-    const campaignsWithStats = campaigns.map((campaign) => ({
-      ...campaign,
-      totalRecipients: campaign.recipients.length,
-      sentCount: campaign.recipients.filter((r) => r.status === "sent" || r.status === "delivered").length,
-      pendingCount: campaign.recipients.filter((r) => r.status === "pending").length,
-      failedCount: campaign.recipients.filter((r) => r.status === "failed").length,
-      recipients: undefined,
-    }))
+    if (existingUser) {
+      return NextResponse.json({ message: "Email already registered" }, { status: 400 })
+    }
 
-    return NextResponse.json({ campaigns: campaignsWithStats })
+    // Generate temporary password
+    const tempPassword = generateTempPassword()
+    const passwordHash = await hashPassword(tempPassword)
+
+    // Create agent and quota in transaction
+    await db.$transaction(async (tx: any) => {
+      const agent = await tx.user.create({
+        data: {
+          fullName: data.fullName,
+          email: data.email,
+          phone: data.phone,
+          role: "AGENT",
+          passwordHash,
+          companyId: data.companyId,
+        },
+      })
+
+      // Create agent quota
+      const resetAt = new Date()
+      resetAt.setHours(24, 0, 0, 0) // Reset at midnight
+
+      await tx.agentQuota.create({
+        data: {
+          agentId: agent.id,
+          companyId: data.companyId,
+          dailyLimit: data.dailyQuota,
+          messagesSentToday: 0,
+          resetAt,
+        },
+      })
+    })
+
+    // In production, send email with credentials
+
+    return NextResponse.json({
+      success: true,
+      tempPassword,
+    })
   } catch (error) {
-    console.error("[v0] Get campaigns error:", error)
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to fetch campaigns" },
-      { status: 500 },
-    )
+    console.error("[v0] Agent invite error:", error)
+
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ message: "Invalid input data" }, { status: 400 })
+    }
+
+    return NextResponse.json({ message: "Internal server error" }, { status: 500 })
   }
 }

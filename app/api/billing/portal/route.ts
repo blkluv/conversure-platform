@@ -1,11 +1,14 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { stripe } from "@/lib/stripe"
+import { stripe, requireStripeConfig } from "@/lib/stripe"
 import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await requireAuth(req)
+    // Check if Stripe is configured
+    requireStripeConfig()
+    
+    const session = await requireAuth()
 
     const company = await db.company.findUnique({
       where: { id: session.companyId },

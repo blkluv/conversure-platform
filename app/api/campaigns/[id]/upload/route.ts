@@ -2,10 +2,17 @@ import { type NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+// Next.js 16 expects params to be a Promise in the type definition
+type RouteContext = {
+  params: Promise<{ id: string }>
+}
+
+export async function POST(req: NextRequest, context: RouteContext) {
   try {
-    const session = await requireAuth(req)
-    const campaignId = params.id
+    const session = await requireAuth()
+
+    const { id } = await context.params
+    const campaignId = id
 
     const campaign = await db.campaign.findFirst({
       where: {
@@ -28,7 +35,6 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     const text = await file.text()
     const lines = text.split("\n").filter((line) => line.trim())
 
-    // Parse CSV (simple implementation)
     const recipients: Array<{
       phone: string
       name?: string
@@ -36,7 +42,6 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       leadId?: string
     }> = []
 
-    // Skip header if present
     const dataLines = lines[0].toLowerCase().includes("phone") ? lines.slice(1) : lines
 
     for (const line of dataLines) {
@@ -56,7 +61,6 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       }
     }
 
-    // Create campaign recipients
     const created = await Promise.all(
       recipients.map((recipient) =>
         db.campaignRecipient.create({

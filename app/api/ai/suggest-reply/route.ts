@@ -45,10 +45,10 @@ export async function POST(req: Request) {
 
     const conversationHistory = conversation.messages
       .reverse()
-      .map((msg) => {
-        const sender = msg.direction === "OUTBOUND" ? msg.sender?.fullName || "Agent" : conversation.lead.name
-        return `${sender}: ${msg.body}`
-      })
+      .map((msg: any) => {
+      const sender = msg.direction === "OUTBOUND" ? msg.sender?.fullName || "Agent" : conversation.lead.name
+      return `${sender}: ${msg.body}`
+  })
       .join("\n")
 
     const leadContext = `Lead: ${conversation.lead.name}

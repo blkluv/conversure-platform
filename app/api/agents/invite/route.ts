@@ -1,6 +1,6 @@
 // Agent invitation API
 import { type NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/db"
+import { db } from "@/lib/db"              // ✅ use db here
 import { requireRole, hashPassword } from "@/lib/auth"
 import { z } from "zod"
 
@@ -29,8 +29,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const data = inviteSchema.parse(body)
 
-    // Check if email already exists
-    const existingUser = await prisma.user.findUnique({
+    // ✅ Use db instead of prisma
+    const existingUser = await db.user.findUnique({
       where: { email: data.email },
     })
 
@@ -42,8 +42,8 @@ export async function POST(request: NextRequest) {
     const tempPassword = generateTempPassword()
     const passwordHash = await hashPassword(tempPassword)
 
-    // Create agent and quota in transaction
-    await prisma.$transaction(async (tx) => {
+    // ✅ Use db.$transaction and type tx as any to avoid TS error without changing logic
+    await db.$transaction(async (tx: any) => {
       const agent = await tx.user.create({
         data: {
           fullName: data.fullName,

@@ -4,7 +4,7 @@ import { requireAuth } from "@/lib/auth"
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await requireAuth(req)
+    const session = await requireAuth()
 
     const feedbacks = await db.feedback.findMany({
       where: {
@@ -44,7 +44,7 @@ export async function GET(req: NextRequest) {
       }
     >()
 
-    feedbacks.forEach((feedback) => {
+    feedbacks.forEach((feedback: (typeof feedbacks)[number]) => {
       const agentId = feedback.agentId
 
       if (!agentStats.has(agentId)) {
@@ -70,9 +70,9 @@ export async function GET(req: NextRequest) {
     })
 
     const negativeFeedback = feedbacks
-      .filter((f) => f.rating <= 3)
+      .filter((f: (typeof feedbacks)[number]) => f.rating <= 3)
       .slice(0, 10)
-      .map((f) => ({
+      .map((f: (typeof feedbacks)[number]) => ({
         id: f.id,
         agentName: f.agent.fullName,
         leadName: f.lead.name,
@@ -80,7 +80,7 @@ export async function GET(req: NextRequest) {
         rating: f.rating,
         comment: f.comment,
         respondedAt: f.respondedAt,
-      }))
+  }))
 
     return NextResponse.json({
       agentSummaries,

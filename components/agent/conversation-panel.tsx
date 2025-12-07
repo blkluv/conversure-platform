@@ -9,11 +9,49 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { MessageCircle, Send, ExternalLink, User, Phone, Mail, MapPin, DollarSign, Home, Loader2 } from "lucide-react"
 import { formatDistanceToNow } from "date-fns"
-import type { Conversation, Lead, Message } from "@prisma/client"
-
-interface ConversationWithDetails extends Conversation {
-  lead: Lead
-  messages: Message[]
+// Define types manually since Prisma client may not be generated yet
+interface ConversationWithDetails {
+  id: string
+  companyId: string
+  leadId: string
+  agentId: string | null
+  whatsappNumber: string
+  lastMessageAt: Date
+  lastDirection: string
+  status: string
+  chatwootConversationId: string | null
+  evolutionChatId: string | null
+  createdAt: Date
+  updatedAt: Date
+  lead: {
+    id: string
+    name: string
+    phone: string
+    email: string | null
+    status: string
+    tags: string[]
+    bitrixLeadId: string | null
+    budget: string | null
+    propertyType: string | null
+    location: string | null
+    bedrooms: number | null
+  }
+  messages: Array<{
+    id: string
+    conversationId: string
+    senderId: string | null
+    direction: string
+    contentType: string
+    body: string
+    wabaMessageId: string | null
+    templateName: string | null
+    sentAt: Date
+    deliveredAt: Date | null
+    readAt: Date | null
+    failedAt: Date | null
+    errorMessage: string | null
+    createdAt: Date
+  }>
 }
 
 interface ConversationPanelProps {
@@ -273,7 +311,7 @@ export function ConversationPanel({ conversation, agentId, companyId, agentQuota
           <div>
             <h4 className="text-sm font-semibold mb-2">Tags</h4>
             <div className="flex flex-wrap gap-2">
-              {lead.tags.map((tag) => (
+              {lead.tags.map((tag: string) => (
                 <Badge key={tag} variant="secondary">
                   {tag}
                 </Badge>
