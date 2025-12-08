@@ -1,5 +1,8 @@
+"use client"
+
 import type { ReactNode } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { MessageSquare, LayoutDashboard, Users, Settings, LogOut, MessageCircle, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
@@ -42,12 +45,7 @@ export function DashboardLayout({ children, role, companyName }: DashboardLayout
           </Link>
 
           <div className="ml-auto flex items-center gap-4">
-            <form action="/api/auth/logout" method="POST">
-              <Button type="submit" variant="ghost" size="sm">
-                <LogOut className="mr-2 h-4 w-4" />
-                Logout
-              </Button>
-            </form>
+            <LogoutButton />
           </div>
         </div>
       </div>
@@ -74,5 +72,37 @@ export function DashboardLayout({ children, role, companyName }: DashboardLayout
         <main className="flex-1 p-8">{children}</main>
       </div>
     </div>
+  )
+}
+
+function LogoutButton() {
+  const router = useRouter()
+
+  const handleLogout = async () => {
+    try {
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+
+      if (response.ok) {
+        // Redirect to login page
+        router.push("/login")
+        router.refresh()
+      }
+    } catch (error) {
+      console.error("Logout error:", error)
+      // Fallback: redirect anyway
+      router.push("/login")
+    }
+  }
+
+  return (
+    <Button onClick={handleLogout} variant="ghost" size="sm">
+      <LogOut className="mr-2 h-4 w-4" />
+      Logout
+    </Button>
   )
 }

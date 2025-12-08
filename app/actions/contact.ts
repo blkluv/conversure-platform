@@ -48,26 +48,33 @@ export async function submitContactForm(data: ContactFormData): Promise<ContactF
       }
     }
 
-    // Log the contact form submission (placeholder for email service)
+    // Log the contact form submission
+    const identityLabel = data.identity === "company" ? "Real Estate Company" : "Individual Agent"
+    
     console.log("=== NEW CONTACT FORM SUBMISSION ===")
     console.log("Timestamp:", new Date().toISOString())
     console.log("Name:", data.name)
     console.log("Email:", data.email)
     console.log("Phone:", data.phone)
-    console.log("Identity:", data.identity === "company" ? "Real Estate Company" : "Individual Agent")
+    console.log("Identity:", identityLabel)
+    console.log("Notification Email:", "abdallah@betaedgetech.com")
     console.log("===================================")
 
     // TODO: Integrate with email service (Resend, Nodemailer, etc.)
-    // Example:
+    // When ready, uncomment and configure:
+    // 
     // await sendEmail({
-    //   to: "your-email@example.com",
-    //   subject: `New Demo Request from ${data.name}`,
+    //   to: "abdallah@betaedgetech.com",
+    //   subject: `New Demo Request from ${data.name} - Conversure`,
     //   html: `
-    //     <h2>New Contact Form Submission</h2>
+    //     <h2>New Contact Form Submission - Conversure</h2>
     //     <p><strong>Name:</strong> ${data.name}</p>
     //     <p><strong>Email:</strong> ${data.email}</p>
     //     <p><strong>Phone:</strong> ${data.phone}</p>
-    //     <p><strong>Identity:</strong> ${data.identity === "company" ? "Real Estate Company" : "Individual Agent"}</p>
+    //     <p><strong>Identity:</strong> ${identityLabel}</p>
+    //     <p><strong>Submitted:</strong> ${new Date().toLocaleString()}</p>
+    //     <hr />
+    //     <p><small>This notification was sent to abdallah@betaedgetech.com</small></p>
     //   `,
     // })
 
