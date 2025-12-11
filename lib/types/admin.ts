@@ -29,7 +29,7 @@ export const DashboardMetricsSchema = z.object({
   totalLeads: z.number().int().nonnegative(),
   activeCampaigns: z.number().int().nonnegative(),
   messagesToday: z.number().int().nonnegative(),
-  dailyLimit: z.number().int().positive(),
+  dailyLimit: z.number().int().nonnegative(), // Changed from .positive() to .nonnegative() - allows 0 when no WhatsApp numbers
   trend: z.object({
     leads: z.number(),
     campaigns: z.number(),

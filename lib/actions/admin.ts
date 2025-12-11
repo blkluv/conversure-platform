@@ -38,7 +38,7 @@ const DashboardMetricsResponseSchema = z.object({
     totalLeads: z.number().int().nonnegative(),
     activeCampaigns: z.number().int().nonnegative(),
     messagesToday: z.number().int().nonnegative(),
-    dailyLimit: z.number().int().positive(),
+    dailyLimit: z.number().int().nonnegative(), // Changed from .positive() to .nonnegative() - allows 0 when no WhatsApp numbers
     trend: z.object({
       leads: z.number(),      // Can be negative for decline
       campaigns: z.number(),
@@ -480,12 +480,21 @@ export async function getBillingStatus(): Promise<BillingStatusResponse> {
     // RESPONSE VALIDATION & RETURN
     // ============================================
 
+    // Map subscriptionStatus to a valid enum value, defaulting to 'active' if null/undefined
+    const statusMapping: Record<string, BillingStatus> = {
+      'active': 'active',
+      'trialing': 'trialing',
+      'past_due': 'past_due',
+      'canceled': 'canceled',
+    }
+    const mappedStatus = statusMapping[company.subscriptionStatus || ''] || 'active'
+
     const billingData = {
       plan: company.plan as PlanType,
-      status: company.subscriptionStatus as BillingStatus,
+      status: mappedStatus,
       currentPeriodEnd: company.currentPeriodEnd?.toISOString() || new Date().toISOString(),
       seatsUsed,
-      seatsTotal: company.seats,
+      seatsTotal: company.seats || 5, // Default to 5 seats if not set
       monthlyCost,
       stripePortalUrl,
     }
