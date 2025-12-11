@@ -3,10 +3,13 @@ import { getSession } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
 import { StatCard } from "@/components/dashboard/stat-card"
+import { StatsSection } from "@/components/dashboard/stats-section"
+import { BillingPanel } from "@/components/dashboard/billing-panel"
+import { WhatsAppStatus } from "@/components/dashboard/whatsapp-status"
 import { 
-  MessageSquare, 
-  Users, 
-  TrendingUp, 
+  MessageSquare,
+  Users,
+  TrendingUp,
   Clock, 
   BarChart3, 
   Star,
@@ -291,6 +294,15 @@ export default async function AdminDashboardPage() {
           <p className="text-muted-foreground">
             Welcome back! Here's your real estate CRM overview for today.
           </p>
+        </div>
+
+        {/* Easy Panel Analytics - Story 1.2: StatsSection Component */}
+        <StatsSection />
+
+        {/* Billing & WhatsApp Status Grid - Stories 2.2 & 4.2 */}
+        <div className="grid gap-4 md:grid-cols-2">
+          <BillingPanel />
+          <WhatsAppStatus />
         </div>
 
         {/* High-Level KPIs */}

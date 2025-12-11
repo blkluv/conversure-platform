@@ -1,0 +1,432 @@
+# Sprint Status Tracking - Easy Panel Admin Dashboard
+
+**Project:** Conversure UAE Real Estate CRM  
+**Feature:** Easy Panel (Admin Dashboard)  
+**Tracking Version:** 1.0  
+**Start Date:** 2025-12-11  
+**Sprint Duration:** 2 weeks  
+**Velocity Target:** 23 story points
+
+---
+
+## Sprint 1 Overview
+
+**Sprint Goal:** Deliver core analytics and billing functionality for the Easy Panel admin dashboard.
+
+**Sprint Duration:** 2 weeks (2025-12-11 to 2025-12-25)
+
+**Team Velocity:** 23 story points (baseline)
+
+**Definition of Done:**
+- Code reviewed and approved by architecture team
+- All acceptance criteria verified
+- Multi-tenant isolation tested (for data stories)
+- Unit + integration tests written and passing
+- TypeScript strict mode compliance
+- Responsive design tested (mobile/tablet/desktop)
+- WCAG AA accessibility verified
+- Documentation updated
+- Merged to develop branch
+
+---
+
+## Sprint 1 Stories
+
+### Story 1.1: Create getDashboardMetrics Server Action
+**Epic:** Analytics Dashboard  
+**Status:** `not-started` → `in-progress` → `in-review` → `done`  
+**Story Points:** 5  
+**Priority:** P0 (Critical - blocks 1.2, 4.1)  
+**Assigned To:** [Developer 1]  
+
+**Description:** Build server-side data fetching function for dashboard analytics with role-based access control, company-scoped filtering, and trend calculations.
+
+**Dependencies:** None (core feature)
+
+**Acceptance Criteria:** 15 checks (see EASY_PANEL_EPICS_AND_STORIES.md for full list)
+- ✅ Implements requireAuth() and requireRole() checks
+- ✅ Applies companyId filter on all Prisma queries
+- ✅ Calculates lead/campaign/message trends
+- ✅ Returns Zod-validated response schema
+- ✅ Multi-tenant isolation verified (test with 2 companies)
+
+**Files to Create/Modify:**
+- NEW: `lib/actions/admin.ts` (create file with getDashboardMetrics export)
+- MODIFY: `middleware.ts` (ensure /dashboard/admin route protection)
+
+**Technical Notes:**
+- Use Prisma aggregation queries (count, sum)
+- Implement trend calculation logic (current vs historical)
+- Mock WhatsAppNumber dailyLimit summation
+
+---
+
+### Story 1.2: Create StatsSection Component with 3 Stat Cards
+**Epic:** Analytics Dashboard  
+**Status:** `not-started`  
+**Story Points:** 5  
+**Priority:** P0 (Blocks main dashboard UI)  
+**Assigned To:** [Developer 2]  
+**Depends On:** Story 1.1 (getDashboardMetrics)  
+
+**Description:** Build responsive React component rendering three analytics cards (Total Leads, Active Campaigns, WhatsApp Message Usage) with icons, trends, and quota progress bar.
+
+**Acceptance Criteria:** 13 checks
+- ✅ Responsive grid: 3 cols (lg), 2 cols (md), 1 col (sm)
+- ✅ Calls getDashboardMetrics() on mount
+- ✅ Shows skeleton loader while fetching
+- ✅ Displays progress bar with color coding (green/yellow/red)
+- ✅ Uses lucide-react icons (Users, Send, MessageSquare)
+- ✅ Uses shadcn/ui Card component
+- ✅ No new npm dependencies
+
+**Files to Create/Modify:**
+- NEW: `app/(dashboard)/admin/components/StatsSection.tsx`
+
+**Technical Notes:**
+- Use React.useState for loading/error state
+- Use React.useEffect for data fetching
+- Color-code progress bar: <80% green, 80-95% yellow, >95% red
+
+---
+
+### Story 1.4: Add Loading Skeleton for Stat Cards
+**Epic:** Analytics Dashboard  
+**Status:** `not-started`  
+**Story Points:** 2  
+**Priority:** P1 (UX enhancement)  
+**Assigned To:** [Developer 2]  
+**Depends On:** Story 1.2 (StatsSection component)  
+
+**Description:** Add skeleton/placeholder loaders to show loading state for stat cards during data fetch.
+
+**Acceptance Criteria:** 7 checks
+- ✅ Display 3 skeleton cards in same grid layout on initial load
+- ✅ Skeleton animates smoothly (pulse or shimmer)
+- ✅ Uses shadcn/ui Skeleton component
+- ✅ Skeleton does NOT show on 30-second refresh intervals
+- ✅ Skeleton disappears immediately once data loads
+- ✅ Accessible with aria-label
+
+**Files to Create/Modify:**
+- MODIFY: `app/(dashboard)/admin/components/StatsSection.tsx`
+
+**Technical Notes:**
+- Conditional rendering: if (loading && !isRefresh) { showSkeleton }
+- Import from shadcn/ui/skeleton
+
+---
+
+### Story 2.1: Create getBillingStatus Server Action
+**Epic:** Billing Management  
+**Status:** `not-started`  
+**Story Points:** 5  
+**Priority:** P0 (Critical - blocks 2.2)  
+**Assigned To:** [Developer 3]  
+
+**Description:** Build server-side function fetching subscription data from Company model and Stripe API. Returns plan, status, seats, renewal date, and portal URL.
+
+**Dependencies:** Stripe API integration (already exists in lib/stripe.ts)
+
+**Acceptance Criteria:** 12 checks
+- ✅ Implements requireAuth() and requireRole() checks
+- ✅ Queries Company table with companyId filter
+- ✅ Counts active users for seatsUsed calculation
+- ✅ Fetches Stripe portal URL via lib/stripe.ts
+- ✅ Returns Zod-validated response schema
+- ✅ Handles missing Stripe customer gracefully
+- ✅ Multi-tenant isolation verified
+
+**Files to Create/Modify:**
+- MODIFY: `lib/actions/admin.ts` (add getBillingStatus export)
+- Existing: `lib/stripe.ts` (use existing Stripe client)
+
+**Technical Notes:**
+- Query Company.plan, subscriptionStatus, currentPeriodEnd, seats
+- Count User records with companyId + isActive = true
+- Use Stripe Customer Portal session creation API
+
+---
+
+### Story 2.2: Create BillingPanel Component
+**Epic:** Billing Management  
+**Status:** `not-started`  
+**Story Points:** 4  
+**Priority:** P0 (Core dashboard feature)  
+**Assigned To:** [Developer 4]  
+**Depends On:** Story 2.1 (getBillingStatus)  
+
+**Description:** Build React component displaying billing information: plan badge, status, seats used/total, renewal date, monthly cost, and Stripe portal link.
+
+**Acceptance Criteria:** 14 checks
+- ✅ Calls getBillingStatus() on mount
+- ✅ Shows skeleton loader while fetching
+- ✅ Displays plan badge with color coding (Blue/Green/Orange/Purple)
+- ✅ Displays status badge (Active/Trialing/Past Due/Canceled)
+- ✅ Displays seats as "X / Y" format
+- ✅ Displays renewal date formatted (e.g., "Dec 31, 2025")
+- ✅ Displays monthly cost as "$399.00"
+- ✅ "Manage Subscription" button links to stripePortalUrl
+- ✅ Uses shadcn/ui Card and Badge components
+- ✅ Responsive layout
+
+**Files to Create/Modify:**
+- NEW: `app/(dashboard)/admin/components/BillingPanel.tsx`
+
+**Technical Notes:**
+- Use React.useState for loading/error state
+- Import formatDate, formatCurrency from lib/format.ts (created by Story 2.3)
+- Color mapping: STARTER=blue, GROWTH=green, PRO=orange, ENTERPRISE=purple
+
+---
+
+### Story 2.3: Create Date/Currency Formatting Utilities
+**Epic:** Billing Management  
+**Status:** `not-started`  
+**Story Points:** 2  
+**Priority:** P1 (Utility for Stories 2.2, 4.2)  
+**Assigned To:** [Developer 5]  
+
+**Description:** Create utility functions for consistent date formatting (ISO → "MMM DD, YYYY") and currency formatting (cents → "$X.XX") across components.
+
+**Acceptance Criteria:** 8 checks
+- ✅ Export formatDate(isoString: string): string function
+- ✅ formatDate returns "Dec 31, 2025" format
+- ✅ Export formatCurrency(cents: number): string function
+- ✅ formatCurrency returns "$X.XX" format
+- ✅ Handles edge cases (0, Infinity, NaN)
+- ✅ Uses native JavaScript Date and Intl APIs
+- ✅ No new npm dependencies
+- ✅ Full TypeScript types
+
+**Files to Create/Modify:**
+- NEW: `lib/format.ts` (create new file)
+
+**Technical Notes:**
+- Use `new Date()` and `toLocaleDateString()` for date formatting
+- Use `Intl.NumberFormat()` for currency formatting
+- Pattern: export both functions for reuse across codebase
+
+---
+
+## Sprint 1 Summary
+
+| Story | Epic | Points | Priority | Dev | Status |
+|-------|------|--------|----------|-----|--------|
+| 1.1 | Analytics | 5 | P0 | Dev1 | not-started |
+| 1.2 | Analytics | 5 | P0 | Dev2 | not-started |
+| 1.4 | Analytics | 2 | P1 | Dev2 | not-started |
+| 2.1 | Billing | 5 | P0 | Dev3 | not-started |
+| 2.2 | Billing | 4 | P0 | Dev4 | not-started |
+| 2.3 | Billing | 2 | P1 | Dev5 | not-started |
+
+**Total Story Points:** 23  
+**Total Dev Days (assuming 5 pts/day per dev):** 4.6 days  
+**Recommended Team:** 3-4 developers  
+**Sprint Capacity:** 23 points ✅
+
+---
+
+## Development Order (Recommended)
+
+**Week 1:**
+1. **Day 1-2:** Story 1.1 (getDashboardMetrics) - Start immediately, blocks other stories
+2. **Day 1-2:** Story 2.3 (formatDate/formatCurrency utilities) - Parallel, quick win
+3. **Day 2-3:** Story 2.1 (getBillingStatus) - Parallel with 1.1
+4. **Day 3-4:** Story 1.2 (StatsSection) - Waits for 1.1 completion
+
+**Week 2:**
+5. **Day 5-7:** Story 2.2 (BillingPanel) - Waits for 2.1 completion
+6. **Day 7-8:** Story 1.4 (Loading skeleton) - Polish, lowest priority
+7. **Day 8-9:** Code review, testing, integration, bugfixes
+8. **Day 10:** Demo readiness, staging deployment
+
+---
+
+## Dependencies & Blockers
+
+| Story | Blocked By | Unblocks | Note |
+|-------|-----------|----------|------|
+| 1.2 | 1.1 | 1.4 | Needs getDashboardMetrics working |
+| 1.4 | 1.2 | - | Polish only, low priority |
+| 2.2 | 2.1 | - | Needs getBillingStatus working |
+| 2.2 | 2.3 | - | Needs formatDate/formatCurrency utils |
+| All | middleware.ts | 1.1, 2.1 | Route protection must be configured |
+
+**Middleware Prerequisite:**
+Ensure `/dashboard/admin` route is protected with role check (COMPANY_ADMIN or SUPER_ADMIN). This is required for all Server Actions.
+
+---
+
+## Testing Strategy
+
+### Story 1.1 Testing (getDashboardMetrics)
+- **Unit Tests:** Test Prisma query mocks, trend calculations
+- **Multi-Tenant Test:** Create 2 companies, verify Company A sees only Company A data
+- **Edge Cases:** Zero leads, zero campaigns, missing messages
+- **Error Cases:** Unauthorized user, missing companyId, invalid role
+
+### Story 1.2 Testing (StatsSection)
+- **Integration Test:** Mock getDashboardMetrics, verify component rendering
+- **UI Tests:** Verify card layout (3 cols, 2 cols, 1 col breakpoints)
+- **Error Test:** Mock error response, verify error toast shown
+- **Loading Test:** Verify skeleton shows on initial load
+
+### Story 2.1 Testing (getBillingStatus)
+- **Unit Tests:** Test Company query, seat counting, Stripe portal URL generation
+- **Multi-Tenant Test:** Verify Company A cannot see Company B subscription
+- **Stripe Mock:** Mock Stripe API response, handle missing portal URL
+- **Edge Cases:** Past due status, canceled status, trialing status
+
+### Story 2.2 Testing (BillingPanel)
+- **Integration Test:** Mock getBillingStatus, verify component rendering
+- **Badge Tests:** Verify color-coded plan badges
+- **Currency Test:** Verify "$399.00" formatting
+- **Link Test:** Verify "Manage Subscription" button opens new tab with Stripe URL
+
+### Story 2.3 Testing (Utilities)
+- **formatDate Tests:**
+  - "2025-12-31T00:00:00Z" → "Dec 31, 2025"
+  - null/undefined → "—" or similar
+- **formatCurrency Tests:**
+  - 39900 → "$399.00"
+  - 0 → "$0.00"
+  - 1 → "$0.01"
+
+---
+
+## Deployment Checklist (End of Sprint 1)
+
+Before moving to staging:
+
+- [ ] All 6 stories marked "done"
+- [ ] Code review approved for all stories
+- [ ] Unit tests passing (>90% coverage on Server Actions)
+- [ ] Integration tests passing
+- [ ] Multi-tenant isolation tests passing (2-company verification)
+- [ ] No TypeScript errors (strict mode)
+- [ ] No console errors/warnings in dashboard
+- [ ] Responsive design tested on mobile/tablet/desktop
+- [ ] WCAG AA accessibility score >85
+- [ ] All Zod schemas validated
+- [ ] Database indexes created (companyId on Lead, Campaign, Message)
+- [ ] Environment variables set (.env.local)
+- [ ] Middleware.ts configured for /dashboard/admin route
+- [ ] Changes merged to develop branch
+- [ ] Built successfully on CI/CD pipeline
+- [ ] Ready for staging deployment
+
+---
+
+## Risk Mitigation (Sprint 1 Specific)
+
+| Risk | Impact | Mitigation |
+|------|--------|-----------|
+| Middleware not configured | BLOCKS ALL | Verify /dashboard/admin protection before day 1 |
+| Multi-tenant data leak | SECURITY | Add companyId filter reminder to code review checklist |
+| Stripe API integration fails | BLOCKS 2.1 | Use Stripe mock/sandbox in tests, mock in dev |
+| Complex trend calculations | BLOCKS 1.2 | Provide reference implementation in PR template |
+| Responsive design issues | LOW | Test on real devices daily |
+
+---
+
+## Sprint Metrics & Velocity
+
+**Planned Velocity:** 23 story points
+
+**Expected Completion Rate:** 90% (allow 1 story point of overflow for unknowns)
+
+**Burn-Down Target:**
+- End of Day 2: 20 points remaining
+- End of Day 5: 10 points remaining
+- End of Day 8: 3 points remaining (polish/testing)
+- End of Day 10: 0 points (done + deployed to staging)
+
+**Metrics to Track:**
+- Story completion rate (target 100%)
+- Velocity consistency (for Sprint 2 planning)
+- Bug escape rate (target <5% in staging)
+- Code review turnaround (target <24 hours)
+- Test coverage (target >95% on new code)
+
+---
+
+## Communication Plan
+
+**Daily Standup:** 10:00 AM
+- What did I complete yesterday?
+- What will I complete today?
+- Any blockers?
+
+**Mid-Sprint Check-In:** Day 5
+- Are we on pace for 23 points?
+- Any risks emerging?
+- Need more support?
+
+**End-of-Sprint Demo:** Day 10
+- Demonstrate all 6 stories to stakeholders
+- Show multi-tenant isolation testing
+- Collect feedback for Sprint 2
+
+**Retrospective:** Day 10 (after demo)
+- What went well?
+- What can we improve?
+- Action items for Sprint 2
+
+---
+
+## Sprint 1 Readiness Checklist
+
+**Infrastructure:**
+- ✅ Backlog ready (EASY_PANEL_EPICS_AND_STORIES.md)
+- ✅ Architecture documented (EASY_PANEL_ARCHITECTURE_DESIGN.md)
+- ✅ Acceptance criteria clear (15+ per story)
+- ✅ Dependencies mapped
+- ✅ Multi-tenant isolation strategy defined
+- ✅ Testing strategy documented
+
+**Team:**
+- ⚠️ Developers assigned (names TBD)
+- ⚠️ Code review owners assigned (TBD)
+- ⚠️ QA/Testing resource allocated (TBD)
+- ⚠️ Scrum Master assigned (this document author)
+
+**Technical:**
+- ✅ Prisma ORM available (already in project)
+- ✅ shadcn/ui components available (already in project)
+- ✅ lucide-react icons available (already in project)
+- ✅ Zod validation library available (already in project)
+- ✅ React Hook Form available (already in project)
+- ✅ Stripe API client available (lib/stripe.ts exists)
+- ✅ Next.js 14 Server Actions available
+
+**Documentation:**
+- ✅ PRD complete (EASY_PANEL_PRD.md)
+- ✅ Architecture design complete (EASY_PANEL_ARCHITECTURE_DESIGN.md)
+- ✅ Epic/story backlog complete (EASY_PANEL_EPICS_AND_STORIES.md)
+- ✅ Sprint planning complete (THIS FILE - sprint-status.yaml)
+
+**Quality Gates:**
+- ✅ Definition of Done documented
+- ✅ Testing strategy documented
+- ✅ Multi-tenant isolation checklist ready
+- ✅ Code review template ready
+- ✅ Risk mitigation plan documented
+
+---
+
+## Ready to Proceed ✅
+
+Sprint 1 is **READY FOR DEVELOPMENT**.
+
+**Next Action:** Assign developers to stories and begin Story 1.1 (getDashboardMetrics) on 2025-12-11.
+
+**Expected Completion:** 2025-12-25 (2-week sprint)
+
+**Staging Deployment:** 2025-12-26
+
+---
+
+**Created by:** Scrum Master (@sm)  
+**Date:** 2025-12-11  
+**Status:** FINALIZED - Ready for Sprint Kickoff  
