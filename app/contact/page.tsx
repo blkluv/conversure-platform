@@ -60,11 +60,16 @@ export default function ContactPage() {
                 <CardDescription>Visit us in Dubai</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  Dubai Internet City<br />
-                  Building 10, Office 234<br />
+                <p className="text-sm text-muted-foreground mb-4">
+                  202 Office building, DIP 1<br />
                   Dubai, United Arab Emirates
                 </p>
+                <a
+                  href="mailto:info@betaedgetech.com"
+                  className="text-sm text-primary hover:underline block"
+                >
+                  info@betaedgetech.com
+                </a>
               </CardContent>
             </Card>
 
@@ -77,18 +82,24 @@ export default function ContactPage() {
                 <CardTitle>Email Support</CardTitle>
                 <CardDescription>We'll respond within 24 hours</CardDescription>
               </CardHeader>
-              <CardContent>
-                <a 
-                  href="mailto:support@conversure.ae" 
-                  className="text-sm text-primary hover:underline block mb-2"
+              <CardContent className="space-y-2">
+                <a
+                  href="mailto:support@conversure.ae"
+                  className="text-sm text-primary hover:underline block"
                 >
                   support@conversure.ae
                 </a>
-                <a 
-                  href="mailto:abdallah@betaedgetech.com" 
+                <a
+                  href="mailto:abdallah@betaedgetech.com"
                   className="text-sm text-primary hover:underline block"
                 >
                   abdallah@betaedgetech.com
+                </a>
+                <a
+                  href="mailto:abdemam@betaedgetech.com"
+                  className="text-sm text-primary hover:underline block"
+                >
+                  abdemam@betaedgetech.com
                 </a>
               </CardContent>
             </Card>
@@ -103,11 +114,11 @@ export default function ContactPage() {
                 <CardDescription>Speak with our team</CardDescription>
               </CardHeader>
               <CardContent>
-                <a 
-                  href="tel:+971501234567" 
+                <a
+                  href="tel:+971559528781"
                   className="text-sm text-primary hover:underline block mb-2"
                 >
-                  +971 50 123 4567
+                  +971 55 952 8781
                 </a>
                 <p className="text-xs text-muted-foreground">
                   Monday - Friday: 9:00 AM - 6:00 PM GST
@@ -129,7 +140,7 @@ export default function ContactPage() {
           <div className="text-center max-w-3xl mx-auto space-y-6">
             <h2 className="text-3xl font-bold">Why Choose Conversure?</h2>
             <p className="text-lg text-muted-foreground">
-              Join leading UAE real estate agencies using our AI-powered WhatsApp CRM to automate conversations, 
+              Join leading UAE real estate agencies using our AI-powered WhatsApp CRM to automate conversations,
               manage leads, and close deals faster.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">

@@ -147,7 +147,7 @@ export default function ContactForm() {
               id="phone"
               name="phone"
               type="tel"
-              placeholder="+971 50 123 4567"
+              placeholder="+971 55 952 8781"
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
               disabled={isSubmitting}
@@ -179,11 +179,10 @@ export default function ContactForm() {
 
           {submitStatus.type && (
             <div
-              className={`flex items-center gap-2 p-4 rounded-lg ${
-                submitStatus.type === "success"
+              className={`flex items-center gap-2 p-4 rounded-lg ${submitStatus.type === "success"
                   ? "bg-green-50 text-green-800 border border-green-200"
                   : "bg-red-50 text-red-800 border border-red-200"
-              }`}
+                }`}
               role="alert"
             >
               {submitStatus.type === "success" ? (

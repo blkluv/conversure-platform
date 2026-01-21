@@ -36,12 +36,18 @@ export default function SupportPage() {
                                 <CardTitle>Email Support</CardTitle>
                                 <CardDescription>Best for non-urgent questions</CardDescription>
                             </CardHeader>
-                            <CardContent className="text-center">
+                            <CardContent className="text-center space-y-2">
                                 <a
-                                    href="mailto:support@conversure.com"
-                                    className="text-primary font-medium hover:underline"
+                                    href="mailto:support@conversure.ae"
+                                    className="text-primary font-medium hover:underline block"
                                 >
-                                    support@conversure.com
+                                    support@conversure.ae
+                                </a>
+                                <a
+                                    href="mailto:abdallah@betaedgetech.com"
+                                    className="text-primary font-medium hover:underline block"
+                                >
+                                    abdallah@betaedgetech.com
                                 </a>
                                 <p className="text-sm text-muted-foreground mt-2">
                                     Response time: 2-4 hours
@@ -57,12 +63,12 @@ export default function SupportPage() {
                             </CardHeader>
                             <CardContent className="text-center">
                                 <a
-                                    href="https://wa.me/971501234567"
+                                    href="https://wa.me/971559528781"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="text-primary font-medium hover:underline"
                                 >
-                                    +971 50 123 4567
+                                    +971 55 952 8781
                                 </a>
                                 <p className="text-sm text-muted-foreground mt-2">
                                     Available: 9AM - 6PM GST
@@ -78,10 +84,10 @@ export default function SupportPage() {
                             </CardHeader>
                             <CardContent className="text-center">
                                 <a
-                                    href="tel:+971501234567"
+                                    href="tel:+971559528781"
                                     className="text-primary font-medium hover:underline"
                                 >
-                                    +971 50 123 4567
+                                    +971 55 952 8781
                                 </a>
                                 <p className="text-sm text-muted-foreground mt-2">
                                     Enterprise plan only
