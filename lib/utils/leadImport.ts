@@ -1,3 +1,5 @@
+import Papa from 'papaparse'
+
 /**
  * Excel Lead Import Template Generator
  * Creates a downloadable Excel template for agents to import leads
@@ -105,40 +107,35 @@ export function downloadLeadTemplate() {
  */
 export async function parseLeadCSV(file: File): Promise<LeadImportRow[]> {
     return new Promise((resolve, reject) => {
-        const reader = new FileReader()
+        Papa.parse(file, {
+            header: true,
+            skipEmptyLines: 'greedy',
+            complete: (results) => {
+                if (results.errors.length > 0) {
+                    console.warn('CSV Parse Errors:', results.errors)
+                }
 
-        reader.onload = (e) => {
-            try {
-                const text = e.target?.result as string
-                const rows = text.split('\n').map(row => {
-                    // Simple CSV parsing (handles quoted fields)
-                    const matches = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g)
-                    return matches ? matches.map(cell => cell.replace(/^"|"$/g, '')) : []
-                })
-
-                // Skip header row
-                const dataRows = rows.slice(1).filter(row => row.length > 1 && row[0])
-
-                const leads: LeadImportRow[] = dataRows.map(row => ({
-                    name: row[0] || '',
-                    phone: row[1] || '',
-                    email: row[2] || undefined,
-                    propertyType: row[3] || undefined,
-                    location: row[4] || undefined,
-                    bedrooms: row[5] ? parseInt(row[5]) : undefined,
-                    budget: row[6] || undefined,
-                    source: row[7] || 'CSV Import',
-                    notes: row[8] || undefined,
+                const leads: LeadImportRow[] = results.data.map((row: any) => ({
+                    name: row['Name'] || row['name'] || '',
+                    phone: row['Phone'] || row['phone'] || '',
+                    email: row['Email'] || row['email'] || undefined,
+                    propertyType: row['Property Type'] || row['propertyType'] || undefined,
+                    location: row['Location'] || row['location'] || undefined,
+                    bedrooms: (row['Bedrooms'] || row['bedrooms']) ? parseInt(row['Bedrooms'] || row['bedrooms']) : undefined,
+                    budget: row['Budget'] || row['budget'] || undefined,
+                    source: row['Source'] || row['source'] || 'CSV Import',
+                    notes: row['Notes'] || row['notes'] || undefined,
                 }))
 
-                resolve(leads)
-            } catch (error) {
-                reject(new Error('Failed to parse CSV file'))
-            }
-        }
+                // Filter out completely empty rows that might have slipped through
+                const validLeads = leads.filter(l => l.name || l.phone)
 
-        reader.onerror = () => reject(new Error('Failed to read file'))
-        reader.readAsText(file)
+                resolve(validLeads)
+            },
+            error: (error) => {
+                reject(new Error(`Failed to parse CSV: ${error.message}`))
+            }
+        })
     })
 }
 
