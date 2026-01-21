@@ -34,3 +34,26 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# build
+.next/
+node_modules/
+
+# AI editors / agent tools
+.agent*
+.augment
+.bmad
+.claude
+.clinerules
+.codex
+.crush
+.cursor
+.gemini
+.iflow
+.kiro
+.opencode
+.qwen
+.roo
+.rovodev
+.trae
+.windsurf

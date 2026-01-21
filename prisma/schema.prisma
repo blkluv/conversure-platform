@@ -70,6 +70,14 @@ model Company {
   importBatches         ImportBatch[]
   companySettings       CompanySettings? // Added relation to CompanySettings
   
+  // AI Relations
+  aiPrompts             AiPrompt[]
+  aiSafetyViolations    AiSafetyViolation[]
+  optOutList            OptOutList[]
+  
+  // Phase 3: Webhook audit trail
+  webhookEvents         ProviderWebhookEvent[]
+  
   @@index([whatsappBusinessNumber])
 }
 
@@ -105,6 +113,43 @@ enum MessageGenerationMode {
   MANUAL_COPILOT  // AI drafts, agent approves before sending
 }
 
+enum JobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  DEAD_LETTER
+}
+
+enum GenerationStatus {
+  PENDING_APPROVAL
+  AUTO_SENT
+  APPROVED
+  EDITED
+  REJECTED
+  BLOCKED
+}
+
+enum ViolationType {
+  PRICE_MENTION
+  LEGAL_ADVICE
+  FINANCIAL_ADVICE
+  PERSONAL_DATA_LEAK
+  AGGRESSIVE_LANGUAGE
+  HALLUCINATION
+  OFF_TOPIC
+  SPAM_PATTERN
+  COMPETITOR_MENTION
+  AVAILABILITY_CLAIM
+}
+
+enum ViolationSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
 model CompanySettings {
   id                      String                  @id @default(cuid())
   companyId               String                  @unique
@@ -123,6 +168,45 @@ model CompanySettings {
   evolutionBaseUrl        String?
   evolutionInstanceId     String?
   evolutionApiToken       String?  // Encrypted in production
+  
+  // ============================================
+  // AI POLICY CONFIGURATION
+  // ============================================
+  
+  // AI Mode
+  aiEnabled                 Boolean                 @default(true)
+  aiMode                    MessageGenerationMode   @default(MANUAL_COPILOT)
+  
+  // Intent Rules (JSON arrays of IntentType strings)
+  aiAllowedIntents          String[]  @default(["INQUIRY", "VIEWING_REQUEST", "FOLLOW_UP"])
+  aiAutoSendIntents         String[]  @default([])  // Empty by default (manual approval)
+  
+  // Safety Thresholds
+  aiMinConfidence           Float    @default(0.75)
+  aiMaxMessageLength        Int      @default(400)
+  aiMaxRiskScore            Int      @default(30)
+  
+  // Tone & Language
+  aiTone                    String   @default("professional")
+  aiLanguages               String[] @default(["en", "ar"])
+  
+  // Throttling
+  aiMaxMessagesPerDay       Int      @default(100)
+  aiMaxConsecutiveReplies   Int      @default(3)
+  
+  // Opt-out Enforcement
+  aiRespectOptOut           Boolean  @default(true)
+  aiOptOutKeywords          String[] @default(["stop", "unsubscribe", "opt out", "لا تتصل", "توقف"])
+  
+  // Escalation Rules
+  aiEscalateKeywords        String[] @default(["manager", "complaint", "مدير", "شكوى"])
+  aiEscalateNegativeSentiment Boolean @default(true)
+  
+  // Cost Controls
+  aiDailyBudgetUsd          Float?   // null = no limit
+  aiMonthlyBudgetUsd        Float?   // null = no limit
+  aiCurrentMonthSpend       Float    @default(0)
+  aiBudgetResetAt           DateTime?
   
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
@@ -274,6 +358,7 @@ model Conversation {
   
   // Relations
   messages        Message[]
+  aiGenerations   AiMessageGeneration[]
   
   @@index([companyId])
   @@index([leadId])
@@ -317,10 +402,76 @@ model Message {
   failedAt       DateTime?
   errorMessage   String?
   
+  // AI Generation (if this message was AI-generated)
+  aiGenerations  AiMessageGeneration[]
+  
+  // Delivery tracking (Phase 3)
+  deliveryAttempts MessageDeliveryAttempt[]
+  
   createdAt      DateTime        @default(now())
   
   @@index([conversationId])
   @@index([wabaMessageId])
+}
+
+// ============================================
+// MESSAGE DELIVERY TRACKING (Phase 3)
+// ============================================
+
+model MessageDeliveryAttempt {
+  id                String   @id @default(cuid())
+  messageId         String
+  provider          String   // "META", "CHATWOOT", "EVOLUTION", "GENERIC"
+  status            DeliveryStatus @default(PENDING)
+  externalMessageId String?  // Provider's message ID
+  errorMessage      String?  @db.Text
+  attemptNumber     Int      @default(1)
+  attemptedAt       DateTime @default(now())
+  deliveredAt       DateTime?
+  
+  message           Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  
+  @@index([messageId])
+  @@index([status])
+  @@index([provider])
+}
+
+enum DeliveryStatus {
+  PENDING
+  SENT
+  DELIVERED
+  READ
+  FAILED
+}
+
+// ============================================
+// WEBHOOK AUDIT TRAIL (Phase 3)
+// ============================================
+
+model ProviderWebhookEvent {
+  id            String   @id @default(cuid())
+  companyId     String?
+  provider      String   // "META", "CHATWOOT", "EVOLUTION", "BITRIX", "GENERIC"
+  eventType     String   // "message.inbound", "status.update", "lead.update"
+  payloadJson   Json     // Full webhook payload (sensitive data masked)
+  status        WebhookProcessingStatus @default(PENDING)
+  processedAt   DateTime?
+  errorMessage  String?  @db.Text
+  receivedAt    DateTime @default(now())
+  
+  company       Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  @@index([provider, status])
+  @@index([receivedAt])
+  @@index([companyId])
+}
+
+enum WebhookProcessingStatus {
+  PENDING
+  PROCESSING
+  PROCESSED
+  FAILED
+  IGNORED
 }
 
 enum ContentType {
@@ -626,3 +777,218 @@ model ImportBatch {
   @@index([companyId])
   @@index([type])
 }
+
+// ============================================
+// JOB QUEUE SYSTEM
+// ============================================
+
+model JobQueue {
+  id              String    @id @default(cuid())
+  type            String    // "ai_generation", "campaign_send", "crm_sync", "lead_import"
+  payload         Json      // Job-specific data
+  
+  // Status tracking
+  status          JobStatus @default(PENDING)
+  priority        Int       @default(0)  // Higher = more urgent (0-10)
+  
+  // Retry logic
+  attempts        Int       @default(0)
+  maxAttempts     Int       @default(3)
+  lastError       String?   @db.Text
+  
+  // Idempotency (prevent duplicate processing)
+  idempotencyKey  String?   @unique
+  
+  // Scheduling
+  scheduledFor    DateTime? // null = process immediately
+  startedAt       DateTime?
+  completedAt     DateTime?
+  
+  // Metadata
+  createdBy       String?   // userId
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@index([status, scheduledFor, priority])
+  @@index([type, status])
+  @@index([createdAt])
+}
+
+// ============================================
+// AI PROMPT MANAGEMENT
+// ============================================
+
+model AiPrompt {
+  id                  String   @id @default(cuid())
+  companyId           String?  // null = global platform prompt
+  version             String   // "v1.0.0", "v1.1.0", etc.
+  name                String   // "conversation_reply", "lead_qualification"
+  
+  // Prompt Content
+  systemPrompt        String   @db.Text
+  userPromptTemplate  String   @db.Text
+  variables           String[] @default([])  // ["last_message", "lead_name", "property_type"]
+  
+  // Status
+  isActive            Boolean  @default(false)
+  description         String?  @db.Text
+  
+  // Generation Config
+  model               String   @default("gpt-4-turbo")
+  temperature         Float    @default(0.7)
+  maxTokens           Int      @default(500)
+  
+  // Audit Trail
+  createdBy           String?  // userId
+  activatedAt         DateTime?
+  deactivatedAt       DateTime?
+  
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  
+  // Relations
+  company             Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  generations         AiMessageGeneration[] @relation("PromptVersionUsed")
+  
+  @@unique([companyId, name, version])
+  @@index([companyId, name, isActive])
+  @@index([isActive])
+}
+
+// ============================================
+// AI MESSAGE GENERATION AUDIT
+// ============================================
+
+model AiMessageGeneration {
+  id                  String   @id @default(cuid())
+  conversationId      String
+  messageId           String?  // null until sent
+  
+  // Prompt Tracking
+  promptId            String
+  promptVersion       String
+  
+  // AI Provider Details
+  provider            String   // "openai", "gemini"
+  model               String   // "gpt-4-turbo", "gpt-3.5-turbo"
+  
+  // Token Usage & Cost
+  inputTokens         Int
+  outputTokens        Int
+  totalTokens         Int
+  estimatedCostUsd    Float?
+  
+  // Intent Classification
+  detectedIntent      String?
+  intentConfidence    Float?
+  entities            Json?    // Extracted entities: {budget: "1.5M", location: "Marina"}
+  sentiment           String?  // "positive", "neutral", "negative"
+  urgency             String?  // "low", "medium", "high"
+  
+  // Generated Content
+  draftMessage        String   @db.Text
+  
+  // Safety Check Results
+  safetyPassed        Boolean
+  riskScore           Int?     // 0-100
+  violations          Json?    // Array of violation objects
+  
+  // Approval Workflow
+  status              GenerationStatus @default(PENDING_APPROVAL)
+  wasApproved         Boolean?
+  approvedBy          String?  // userId
+  approvedAt          DateTime?
+  rejectionReason     String?  @db.Text
+  editedMessage       String?  @db.Text  // If agent edited before sending
+  
+  // Send Tracking
+  sentAt              DateTime?
+  deliveredAt         DateTime?
+  readAt              DateTime?
+  
+  // Relations
+  conversation        Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  message             Message?     @relation(fields: [messageId], references: [id], onDelete: SetNull)
+  prompt              AiPrompt     @relation("PromptVersionUsed", fields: [promptId], references: [id], onDelete: Restrict)
+  safetyViolations    AiSafetyViolation[]
+  
+  createdAt           DateTime @default(now())
+  
+  @@index([conversationId])
+  @@index([status])
+  @@index([detectedIntent])
+  @@index([provider, model])
+  @@index([createdAt])
+}
+
+// ============================================
+// AI SAFETY VIOLATION LOG
+// ====================================================================================
+
+model AiSafetyViolation {
+  id                  String   @id @default(cuid())
+  companyId           String
+  generationId        String?  // Link to AiMessageGeneration
+  messageId           String?  // If violation in existing message
+  
+  // Violation Details
+  violationType       ViolationType
+  severity            ViolationSeverity
+  detectedText        String   @db.Text  // The problematic content
+  context             String?  @db.Text  // Surrounding context
+  ruleMatched         String?  // Which safety rule triggered
+  
+  // Action Taken
+  wasBlocked          Boolean  // true if message prevented from sending
+  explanation         String   @db.Text
+  
+  // Human Review
+  reviewedBy          String?  // userId
+  reviewedAt          DateTime?
+  reviewDecision      String?  // "confirmed", "false_positive", "override"
+  reviewNotes         String?  @db.Text
+  
+  // Relations
+  company             Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  generation          AiMessageGeneration? @relation(fields: [generationId], references: [id], onDelete: Cascade)
+  
+  createdAt           DateTime @default(now())
+  
+  @@index([companyId])
+  @@index([violationType])
+  @@index([severity])
+  @@index([wasBlocked])
+  @@index([createdAt])
+}
+
+// ============================================
+// OPT-OUT COMPLIANCE
+// ============================================
+
+model OptOutList {
+  id          String   @id @default(cuid())
+  companyId   String
+  phone       String   // E.164 format (+971501234567)
+  
+  // Opt-out Details
+  reason      String?  // "user_request", "spam_report", "admin_block", "keyword_detected"
+  source      String?  // "whatsapp_message", "admin_action", "api"
+  keyword     String?  // The keyword that triggered opt-out (e.g., "stop")
+  
+  // Audit Trail
+  optedOutAt  DateTime @default(now())
+  optedOutBy  String?  // userId or "system"
+  notes       String?  @db.Text
+  
+  // Reversal (if user opts back in)
+  optedInAt   DateTime?
+  optedInBy   String?
+  
+  // Relations
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  @@unique([companyId, phone])
+  @@index([phone])
+  @@index([companyId])
+}
+

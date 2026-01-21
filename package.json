@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "db:seed": "npx tsx prisma/seed.ts"
+    "db:seed": "npx tsx prisma/seed.ts",
+    "worker": "tsx scripts/worker.ts"
   },
   "engines": {
     "node": ">=20.19.0"
@@ -27,6 +28,7 @@
     "@radix-ui/react-separator": "^1.1.8",
     "@radix-ui/react-slot": "^1.1.0",
     "@radix-ui/react-switch": "^1.2.6",
+    "@radix-ui/react-tabs": "^1.1.13",
     "@types/papaparse": "^5.5.1",
     "autoprefixer": "^10.4.0",
     "bcryptjs": "latest",

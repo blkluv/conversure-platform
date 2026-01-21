@@ -12,12 +12,13 @@ const pricingPlans = [
     name: "Starter",
     price: "299",
     priceId: "STARTER",
-    description: "Perfect for small teams getting started",
+    description: "Perfect for solo agents testing automation",
+    bestFor: "1-2 agents, small property listings",
     features: [
       "Up to 5 agents",
       "1,000 messages/month",
       "WhatsApp Business API",
-      "Basic AI suggestions",
+      "Basic AI suggestions (manual approval)",
       "Email support",
       "14-day free trial",
     ],
@@ -28,10 +29,11 @@ const pricingPlans = [
     price: "699",
     priceId: "GROWTH",
     description: "For growing agencies scaling operations",
+    bestFor: "Small teams (2-5 agents), active lead flow",
     features: [
       "Up to 15 agents",
       "5,000 messages/month",
-      "WhatsApp + Chatwoot",
+      "WhatsApp + Chatwoot support",
       "Advanced AI automation",
       "Bitrix24 CRM sync",
       "Priority support",
@@ -44,13 +46,14 @@ const pricingPlans = [
     price: "1,199",
     priceId: "PRO",
     description: "For established agencies at scale",
+    bestFor: "Large brokerages (10+ agents), high volume",
     features: [
       "Unlimited agents",
       "20,000 messages/month",
-      "All integrations",
-      "AI Pilot mode",
-      "Custom workflows",
-      "Dedicated support",
+      "All integrations (WABA, Chatwoot, Evolution)",
+      "AI Pilot mode (auto-send with approval)",
+      "Custom workflows & automations",
+      "Dedicated account manager",
       "14-day free trial",
     ],
     popular: false,
@@ -113,11 +116,10 @@ export function PricingSection() {
           {pricingPlans.map((plan) => (
             <Card
               key={plan.priceId}
-              className={`relative ${
-                plan.popular
-                  ? "border-primary shadow-xl scale-105 md:scale-110"
-                  : "border-border"
-              }`}
+              className={`relative ${plan.popular
+                ? "border-primary shadow-xl scale-105 md:scale-110"
+                : "border-border"
+                }`}
             >
               {plan.popular && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
@@ -130,7 +132,12 @@ export function PricingSection() {
 
               <CardHeader className="text-center pb-8 pt-8">
                 <CardTitle className="text-2xl mb-2">{plan.name}</CardTitle>
-                <CardDescription className="text-sm">{plan.description}</CardDescription>
+                <CardDescription className="text-sm mb-2">{plan.description}</CardDescription>
+                {plan.bestFor && (
+                  <Badge variant="outline" className="text-xs font-normal">
+                    {plan.bestFor}
+                  </Badge>
+                )}
                 <div className="mt-6">
                   <div className="flex items-baseline justify-center gap-2">
                     <span className="text-5xl font-bold">{plan.price}</span>

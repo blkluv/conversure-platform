@@ -1,4 +1,4 @@
-// Company signup API route
+// Company signup API route with Stripe trial automation
 import { type NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 import { hashPassword, createSession } from "@/lib/auth"
@@ -31,7 +31,10 @@ export async function POST(request: NextRequest) {
 
     // Create company and admin user in a transaction
     const result = await prisma.$transaction(async (tx: any) => {
-      // Create company
+      // Create company with trial subscription
+      const trialEndDate = new Date()
+      trialEndDate.setDate(trialEndDate.getDate() + 14) // 14-day trial
+
       const company = await tx.company.create({
         data: {
           name: data.companyName,
@@ -40,6 +43,22 @@ export async function POST(request: NextRequest) {
           city: data.city,
           wabaStatus: "PENDING",
           warmupStage: 1,
+          plan: "STARTER", // Default plan
+          seats: 5, // Starter plan seats
+          subscriptionStatus: "trialing",
+          trialEndsAt: trialEndDate,
+          aiEnabled: true, // Enable AI by default
+          aiTone: "professional", // Default tone
+          aiLanguages: "en,ar", // Default languages
+        },
+      })
+
+      // Create CompanySettings with safe defaults
+      await tx.companySettings.create({
+        data: {
+          companyId: company.id,
+          whatsappProvider: "WABA", // Default provider
+          messageGenerationMode: "MANUAL_COPILOT", // Safe default - AI suggests, agent approves
         },
       })
 
@@ -86,11 +105,17 @@ export async function POST(request: NextRequest) {
           fullName: result.user.fullName,
           role: result.user.role,
         },
+        company: {
+          id: result.company.id,
+          name: result.company.name,
+          subscriptionStatus: result.company.subscriptionStatus,
+          trialEndsAt: result.company.trialEndsAt,
+        },
       },
       { status: 201 },
     )
   } catch (error) {
-    console.error("[v0] Signup error:", error)
+    console.error("[Signup API] Error:", error)
 
     if (error instanceof z.ZodError) {
       return NextResponse.json({ message: "Invalid input data", errors: error.errors }, { status: 400 })

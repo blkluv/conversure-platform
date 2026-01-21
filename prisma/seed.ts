@@ -231,8 +231,10 @@ async function main() {
         status: "APPROVED",
         bodyPreview: "New property just listed! {{1}} in {{2}}. Price: {{3}} AED. Interested?",
       },
-    ],
-  })
+      ],
+  skipDuplicates: true,
+});
+
 
   console.log("✅ Created demo templates")
 
