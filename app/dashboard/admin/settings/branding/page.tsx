@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,12 +11,38 @@ import { Loader2, Upload, Save } from "lucide-react"
 export default function BrandingSettingsPage() {
     const router = useRouter()
     const [isLoading, setIsLoading] = useState(false)
+    const [isFetching, setIsFetching] = useState(true)
     const [formData, setFormData] = useState({
         logoUrl: "",
         faviconUrl: "",
         primaryBrandColor: "#2563eb",
         secondaryBrandColor: "#06b6d4"
     })
+
+    useEffect(() => {
+        fetchSettings()
+    }, [])
+
+    const fetchSettings = async () => {
+        try {
+            const response = await fetch("/api/admin/settings/branding")
+            if (response.ok) {
+                const data = await response.json()
+                if (data.settings) {
+                    setFormData({
+                        logoUrl: data.settings.logoUrl || "",
+                        faviconUrl: data.settings.faviconUrl || "",
+                        primaryBrandColor: data.settings.primaryBrandColor || "#2563eb",
+                        secondaryBrandColor: data.settings.secondaryBrandColor || "#06b6d4"
+                    })
+                }
+            }
+        } catch (error) {
+            console.error("Failed to fetch settings:", error)
+        } finally {
+            setIsFetching(false)
+        }
+    }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
