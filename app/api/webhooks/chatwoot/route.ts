@@ -27,11 +27,22 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No event type" }, { status: 400 })
     }
 
+    // Only process incoming messages from customers (not from agents)
+    // Chatwoot sends message_type: "incoming" for customer messages
+    // and message_type: "outgoing" for agent replies
     if (body.event === "message_created" && body.message_type === "incoming") {
       const message = body
       const conversation = body.conversation
 
       if (!conversation || !message) {
+        return NextResponse.json({ success: true })
+      }
+
+      // Additional safeguard: Verify sender is not an agent
+      // Chatwoot sometimes sends incoming with sender_type: "agent_bot"
+      const senderType = message.sender?.type || body.sender_type
+      if (senderType === "agent" || senderType === "agent_bot") {
+        console.log("[Chatwoot Webhook] Ignoring agent/bot message to prevent loops")
         return NextResponse.json({ success: true })
       }
 
