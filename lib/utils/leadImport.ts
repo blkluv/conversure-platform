@@ -16,8 +16,8 @@ export interface LeadImportRow {
 }
 
 export const LEAD_TEMPLATE_HEADERS = [
-    'Name (Required)',
-    'Phone (Required)',
+    'Name',
+    'Phone',
     'Email',
     'Property Type',
     'Location',
@@ -152,13 +152,13 @@ export function validateLeadRow(row: LeadImportRow): { valid: boolean; errors: s
         errors.push('Name is required and must be at least 2 characters')
     }
 
-    if (!row.phone || row.phone.trim().length < 8) {
-        errors.push('Phone is required and must be valid')
+    if (!row.phone || row.phone.trim().length < 10) {
+        errors.push('Phone is required and must be at least 10 digits (including country code)')
     }
 
-    // Phone normalization check (should start with + or be UAE format)
-    if (row.phone && !row.phone.startsWith('+') && !row.phone.startsWith('971')) {
-        errors.push('Phone should be in international format (+971...)')
+    // Phone normalization check (should start with +)
+    if (row.phone && !row.phone.startsWith('+')) {
+        errors.push('Phone should be in international format (e.g., +971...)')
     }
 
     return {

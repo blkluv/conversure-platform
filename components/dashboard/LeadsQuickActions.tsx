@@ -2,8 +2,9 @@
 
 import { useState, useRef } from "react"
 import { Button } from "@/components/ui/button"
-import { Users, Download, TrendingUp, Upload, Loader2 } from "lucide-react"
+import { Users, Download, TrendingUp, Upload, Loader2, FileDown } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { parseLeadCSV, validateLeadRow, downloadLeadTemplate, type LeadImportRow } from "@/lib/utils/leadImport"
 
 interface Lead {
   id: string
@@ -49,28 +50,52 @@ export function LeadsQuickActions({ leads }: LeadsQuickActionsProps) {
     setIsUploading(true)
 
     try {
-      const formData = new FormData()
-      formData.append('file', file)
+      const leads = await parseLeadCSV(file)
 
-      const response = await fetch('/api/contacts/upload', {
+      if (leads.length === 0) {
+        alert('No valid leads found in file')
+        return
+      }
+
+      // Validate leads client-side
+      const validLeads = leads.filter((lead: LeadImportRow) => {
+        const { valid } = validateLeadRow(lead)
+        return valid
+      })
+
+      if (validLeads.length === 0) {
+        alert('All rows in the CSV appear to be invalid. Please check the format.')
+        return
+      }
+
+      if (validLeads.length < leads.length) {
+        const confirm = window.confirm(`Found ${leads.length - validLeads.length} invalid rows that will be skipped. Continue with ${validLeads.length} valid leads?`)
+        if (!confirm) return
+      }
+
+      const response = await fetch('/api/contacts/import', {
         method: 'POST',
-        body: formData,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ leads: validLeads }),
       })
 
       if (!response.ok) {
-        throw new Error('Upload failed')
+        const errorData = await response.json()
+        throw new Error(errorData.message || 'Import failed')
       }
 
       const result = await response.json()
-      
+
       // Show success message
-      alert(`Successfully imported ${result.count || 0} contacts!`)
-      
+      alert(`Successfully imported ${result.imported || 0} contacts!${result.skipped > 0 ? ` Skipped ${result.skipped} duplicates/errors.` : ''}`)
+
       // Refresh the page to show new leads
       router.refresh()
-    } catch (error) {
+    } catch (error: any) {
       console.error('Import error:', error)
-      alert('Failed to import contacts. Please try again.')
+      alert(error.message || 'Failed to import contacts. Please try again.')
     } finally {
       setIsUploading(false)
       // Reset file input
@@ -86,7 +111,7 @@ export function LeadsQuickActions({ leads }: LeadsQuickActionsProps) {
     try {
       // Prepare CSV data
       const headers = ['Name', 'Phone', 'Email', 'Status', 'Property Type', 'Location', 'Budget', 'Assigned Agent', 'Source', 'Created Date']
-      
+
       const rows = leads.map(lead => [
         lead.name,
         lead.phone,
@@ -110,15 +135,15 @@ export function LeadsQuickActions({ leads }: LeadsQuickActionsProps) {
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
       const link = document.createElement('a')
       const url = URL.createObjectURL(blob)
-      
+
       link.setAttribute('href', url)
       link.setAttribute('download', `leads_export_${new Date().toISOString().split('T')[0]}.csv`)
       link.style.visibility = 'hidden'
-      
+
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
-      
+
       URL.revokeObjectURL(url)
     } catch (error) {
       console.error('Export error:', error)
@@ -142,29 +167,40 @@ export function LeadsQuickActions({ leads }: LeadsQuickActionsProps) {
         className="hidden"
         aria-label="CSV file input"
       />
-      
-      <Button 
-        variant="outline" 
-        className="justify-start"
-        onClick={handleImportClick}
-        disabled={isUploading}
-        aria-label="Import leads from CSV"
-      >
-        {isUploading ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Uploading...
-          </>
-        ) : (
-          <>
-            <Upload className="mr-2 h-4 w-4" />
-            Import Leads
-          </>
-        )}
-      </Button>
-      
-      <Button 
-        variant="outline" 
+
+      <div className="flex gap-2">
+        <Button
+          variant="outline"
+          className="justify-start flex-1"
+          onClick={handleImportClick}
+          disabled={isUploading}
+          aria-label="Import leads from CSV"
+        >
+          {isUploading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Uploading...
+            </>
+          ) : (
+            <>
+              <Upload className="mr-2 h-4 w-4" />
+              Import CSV
+            </>
+          )}
+        </Button>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          title="Download Template"
+          onClick={downloadLeadTemplate}
+        >
+          <FileDown className="h-4 w-4" />
+        </Button>
+      </div>
+
+      <Button
+        variant="outline"
         className="justify-start"
         onClick={handleExportToCSV}
         disabled={isExporting || leads.length === 0}
@@ -182,9 +218,9 @@ export function LeadsQuickActions({ leads }: LeadsQuickActionsProps) {
           </>
         )}
       </Button>
-      
-      <Button 
-        variant="outline" 
+
+      <Button
+        variant="outline"
         className="justify-start"
         onClick={handleViewAnalytics}
         aria-label="View analytics dashboard"
