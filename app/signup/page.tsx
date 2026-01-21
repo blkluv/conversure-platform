@@ -1,7 +1,7 @@
 import { SignupForm } from "@/components/auth/signup-form"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
-import { MessageSquare } from "lucide-react"
+import { Logo } from "@/components/Logo"
 
 export default function SignupPage() {
   return (
@@ -14,12 +14,7 @@ export default function SignupPage() {
 
       <div className="w-full max-w-2xl space-y-6 relative z-10">
         <div className="text-center space-y-2 animate-slideDown">
-          <Link href="/" className="inline-flex items-center gap-2 mb-4 hover:opacity-80 transition-opacity">
-            <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center shadow-lg">
-              <MessageSquare className="w-6 h-6 text-primary-foreground" />
-            </div>
-            <span className="text-2xl font-bold">Conversure</span>
-          </Link>
+          <Logo href="/" variant="full" size="md" className="mb-4 hover:opacity-80 transition-opacity" />
           <h1 className="text-4xl font-bold">Create Your Company Account</h1>
           <p className="text-muted-foreground text-lg">Start your 14-day free trial. No credit card required.</p>
         </div>

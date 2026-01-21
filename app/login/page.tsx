@@ -1,19 +1,14 @@
 import { LoginForm } from "@/components/auth/login-form"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
-import { MessageSquare } from "lucide-react"
+import { Logo } from "@/components/Logo"
 
 export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/50 p-4">
       <div className="w-full max-w-md space-y-6">
         <div className="text-center space-y-2">
-          <Link href="/" className="inline-flex items-center gap-2 mb-4">
-            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-              <MessageSquare className="w-6 h-6 text-primary-foreground" />
-            </div>
-            <span className="text-2xl font-bold">Conversure</span>
-          </Link>
+          <Logo href="/" variant="full" size="md" className="mb-4" />
           <h1 className="text-3xl font-bold">Welcome Back</h1>
           <p className="text-muted-foreground">Sign in to your Conversure account</p>
         </div>

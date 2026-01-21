@@ -208,6 +208,24 @@ model CompanySettings {
   aiCurrentMonthSpend       Float    @default(0)
   aiBudgetResetAt           DateTime?
   
+  // ============================================
+  // BRANDING SETTINGS
+  // ============================================
+  logoUrl                   String?   // Company logo URL
+  faviconUrl                String?   // Website favicon URL
+  primaryBrandColor         String?   // Hex color code
+  secondaryBrandColor       String?   // Hex color code
+  
+  // ============================================
+  // SEO & ANALYTICS SETTINGS
+  // ============================================
+  seoMetaTitle              String?
+  seoMetaDescription        String?
+  seoKeywords               String[]  @default([])
+  seoOgImageUrl             String?   // OpenGraph image
+  googleAnalyticsId         String?   // GA4 Measurement ID
+  googleSearchConsoleCode   String?   // GSC verification code
+  
   createdAt               DateTime @default(now())
   updatedAt               DateTime @updatedAt
   

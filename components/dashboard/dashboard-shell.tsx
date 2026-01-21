@@ -15,7 +15,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {
-  MessageSquare,
   Users,
   BarChart3,
   Settings,
@@ -31,6 +30,7 @@ import {
   ChevronRight,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { Logo } from "@/components/Logo"
 
 interface Session {
   id: string
@@ -46,33 +46,33 @@ interface DashboardShellProps {
 }
 
 const navigation = [
-  { 
-    name: "Dashboard", 
-    href: "/dashboard/admin", 
+  {
+    name: "Dashboard",
+    href: "/dashboard/admin",
     icon: LayoutDashboard,
     description: "Overview & analytics"
   },
-  { 
-    name: "Contacts", 
-    href: "/contacts", 
+  {
+    name: "Contacts",
+    href: "/contacts",
     icon: Users,
     description: "CRM & contact management"
   },
-  { 
-    name: "Campaigns", 
-    href: "/campaigns", 
+  {
+    name: "Campaigns",
+    href: "/campaigns",
     icon: Send,
     description: "WhatsApp automation"
   },
-  { 
-    name: "Inbox", 
-    href: "/inbox", 
+  {
+    name: "Inbox",
+    href: "/inbox",
     icon: Inbox,
     description: "Live conversations"
   },
-  { 
-    name: "Settings", 
-    href: "/admin/integrations", 
+  {
+    name: "Settings",
+    href: "/admin/integrations",
     icon: Settings,
     description: "Integrations & config"
   },
@@ -87,14 +87,14 @@ function getInitials(name: string): string {
     .slice(0, 2)
 }
 
-function NavItem({ 
-  item, 
-  isActive, 
-  onClick 
-}: { 
+function NavItem({
+  item,
+  isActive,
+  onClick
+}: {
   item: typeof navigation[0]
   isActive: boolean
-  onClick?: () => void 
+  onClick?: () => void
 }) {
   return (
     <Link href={item.href} onClick={onClick}>
@@ -148,15 +148,7 @@ export function DashboardShell({ session, children }: DashboardShellProps) {
     <div className="flex flex-col h-full">
       {/* Logo */}
       <div className="p-6 border-b">
-        <Link href="/dashboard/admin" className="flex items-center gap-3" onClick={onNavClick}>
-          <div className="w-10 h-10 bg-gradient-to-br from-primary to-primary/80 rounded-xl flex items-center justify-center shadow-lg">
-            <MessageSquare className="w-6 h-6 text-primary-foreground" />
-          </div>
-          <div>
-            <span className="text-xl font-bold">Conversure</span>
-            <p className="text-xs text-muted-foreground">Real Estate CRM</p>
-          </div>
-        </Link>
+        <Logo href="/dashboard/admin" variant="full" size="md" />
       </div>
 
       {/* Navigation */}
@@ -253,12 +245,7 @@ export function DashboardShell({ session, children }: DashboardShellProps) {
           </Sheet>
 
           {/* Mobile Logo */}
-          <Link href="/dashboard/admin" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <MessageSquare className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <span className="font-bold">Conversure</span>
-          </Link>
+          <Logo href="/dashboard/admin" variant="full" size="sm" />
 
           {/* Mobile User Menu */}
           <DropdownMenu>
