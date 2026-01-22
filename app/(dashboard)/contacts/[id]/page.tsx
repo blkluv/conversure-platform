@@ -96,10 +96,10 @@ export default async function ContactDetailPage({ params }: PageProps) {
                                             </a>
                                         </div>
                                     )}
-                                    {contact.city && (
+                                    {contact.location && (
                                         <div className="flex items-center gap-3 text-sm">
                                             <MapPin className="h-4 w-4 text-muted-foreground" />
-                                            <span>{contact.city}</span>
+                                            <span>{contact.location}</span>
                                         </div>
                                     )}
                                     <div className="flex items-center gap-3 text-sm">
@@ -117,10 +117,10 @@ export default async function ContactDetailPage({ params }: PageProps) {
                             </CardHeader>
                             <CardContent>
                                 <div className="flex flex-wrap gap-2">
-                                    {contact.leadSource && (
+                                    {contact.source && (
                                         <Badge variant="outline">
                                             <Tag className="mr-1 h-3 w-3" />
-                                            {contact.leadSource}
+                                            {contact.source}
                                         </Badge>
                                     )}
                                     <Button variant="outline" size="sm">
