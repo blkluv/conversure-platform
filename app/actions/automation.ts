@@ -63,7 +63,7 @@ export async function createAutomationRule(data: z.infer<typeof automationRuleSc
                 createdById: user.id,
                 name: validated.name,
                 description: validated.description,
-                event: validated.eventName,
+                eventName: validated.eventName,
                 conditions: validated.conditions,
                 actions: validated.actions,
                 isActive: validated.active
