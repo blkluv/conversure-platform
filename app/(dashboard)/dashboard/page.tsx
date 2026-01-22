@@ -5,7 +5,6 @@
  */
 
 import { Suspense } from 'react'
-import { DashboardLayout } from '@/components/layout'
 import { StatsCard, StatsCardSkeleton, PageHeader } from '@/components/shared'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
