@@ -1,165 +1,215 @@
-import { Suspense } from "react"
-import { redirect } from "next/navigation"
-import Link from "next/link"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Plus, Send, Clock, CheckCircle, XCircle, Pause, Loader2 } from "lucide-react"
-import { getCurrentUser } from "@/lib/auth"
-import { db } from "@/lib/db"
+/**
+ * Campaigns List Page
+ * 
+ * Campaign management with stats and quick actions
+ */
 
-async function getCampaigns(companyId: string) {
-  const campaigns = await db.campaign.findMany({
-    where: { companyId },
-    include: {
-      recipients: {
-        select: {
-          status: true,
-        },
-      },
-    },
-    orderBy: { createdAt: "desc" },
-    take: 50,
-  })
+'use client'
 
-  // Only adding types, logic is exactly the same
-  return campaigns.map((campaign: any) => ({
-    ...campaign,
-    totalRecipients: campaign.recipients.length,
-    sentCount: campaign.recipients.filter(
-      (r: any) => r.status === "sent" || r.status === "delivered",
-    ).length,
-    failedCount: campaign.recipients.filter((r: any) => r.status === "failed").length,
-    pendingCount: campaign.recipients.filter((r: any) => r.status === "pending").length,
-  }))
+import { useState } from 'react'
+import { DashboardLayout } from '@/components/layout'
+import { PageHeader, EmptyState, StatsCard } from '@/components/shared'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Progress } from '@/components/ui/progress'
+import { Megaphone, Users, Send, Clock, Plus, MoreVertical } from 'lucide-react'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+
+type Campaign = {
+  id: string
+  name: string
+  status: 'DRAFT' | 'SCHEDULED' | 'SENDING' | 'SENT' | 'PAUSED'
+  targetCount: number
+  sentCount: number
+  deliveredCount: number
+  scheduledFor?: Date
+  createdAt: Date
 }
 
-async function CampaignsContent() {
-  const session = await getCurrentUser()
-
-  if (!session) {
-    redirect("/login")
+// Mock data
+const mockCampaigns: Campaign[] = [
+  {
+    id: '1',
+    name: 'Villa Launch Campaign',
+    status: 'SENT',
+    targetCount: 150,
+    sentCount: 150,
+    deliveredCount: 147,
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2)
+  },
+  {
+    id: '2',
+    name: 'Weekend Open House',
+    status: 'SCHEDULED',
+    targetCount: 200,
+    sentCount: 0,
+    deliveredCount: 0,
+    scheduledFor: new Date(Date.now() + 1000 * 60 * 60 * 24),
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 4)
   }
+]
 
-  const campaigns = await getCampaigns(session.companyId)
+export default function CampaignsPage() {
+  const router = useRouter()
 
-  const statusIcons = {
-    scheduled: Clock,
-    running: Send,
-    completed: CheckCircle,
-    paused: Pause,
-    failed: XCircle,
-  }
-
-  const statusColors = {
-    scheduled: "bg-blue-500",
-    running: "bg-yellow-500",
-    completed: "bg-green-500",
-    paused: "bg-gray-500",
-    failed: "bg-red-500",
+  const stats = {
+    totalCampaigns: mockCampaigns.length,
+    activeCampaigns: mockCampaigns.filter(c => c.status === 'SENDING' || c.status === 'SCHEDULED').length,
+    totalSent: mockCampaigns.reduce((sum, c) => sum + c.sentCount, 0),
+    avgDeliveryRate: 98
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Campaigns</h1>
-          <p className="text-muted-foreground mt-2">Manage your WhatsApp bulk messaging campaigns</p>
-        </div>
-        <Link href="/campaigns/new">
-          <Button>
-            <Plus className="w-4 h-4 mr-2" />
-            New Campaign
-          </Button>
-        </Link>
-      </div>
-
-      {campaigns.length === 0 ? (
-        <Card className="flex flex-col items-center justify-center py-16">
-          <Send className="w-16 h-16 text-muted-foreground mb-4" />
-          <CardTitle className="mb-2">No campaigns yet</CardTitle>
-          <CardDescription className="mb-6">Create your first bulk messaging campaign to get started</CardDescription>
-          <Link href="/campaigns/new">
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
-              Create Campaign
+    <DashboardLayout>
+      <div className="space-y-6 p-6">
+        <PageHeader
+          title="Campaigns"
+          description="Broadcast messages to your contacts"
+          actions={
+            <Button asChild>
+              <Link href="/campaigns/create">
+                <Plus className="mr-2 h-4 w-4" />
+                New Campaign
+              </Link>
             </Button>
-          </Link>
-        </Card>
-      ) : (
-        <div className="grid gap-4">
-          {campaigns.map((campaign: any) => {
-            const StatusIcon = statusIcons[campaign.status as keyof typeof statusIcons] || Clock
-            const statusColor = statusColors[campaign.status as keyof typeof statusColors] || "bg-gray-500"
+          }
+        />
 
-            return (
-              <Card key={campaign.id} className="hover:shadow-md transition-shadow">
+        {/* Stats */}
+        <div className="grid gap-4 md:grid-cols-4">
+          <StatsCard
+            title="Total Campaigns"
+            value={stats.totalCampaigns}
+            icon={Megaphone}
+            description="All time"
+          />
+          <StatsCard
+            title="Active"
+            value={stats.activeCampaigns}
+            icon={Clock}
+            description="Sending or scheduled"
+          />
+          <StatsCard
+            title="Messages Sent"
+            value={stats.totalSent.toLocaleString()}
+            icon={Send}
+            description="This month"
+          />
+          <StatsCard
+            title="Delivery Rate"
+            value={`${stats.avgDeliveryRate}%`}
+            icon={Users}
+            description="Average"
+            trend={{ value: 2.5, isPositive: true }}
+          />
+        </div>
+
+        {/* Campaigns List */}
+        <div className="space-y-4">
+          {mockCampaigns.length > 0 ? (
+            mockCampaigns.map((campaign) => (
+              <Card key={campaign.id}>
                 <CardHeader>
                   <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <CardTitle className="text-xl">{campaign.name}</CardTitle>
-                        <Badge className={statusColor}>
-                          <StatusIcon className="w-3 h-3 mr-1" />
-                          {campaign.status}
-                        </Badge>
-                      </div>
-                      {campaign.description && (
-                        <CardDescription className="line-clamp-2">{campaign.description}</CardDescription>
-                      )}
+                    <div>
+                      <CardTitle>{campaign.name}</CardTitle>
+                      <CardDescription>
+                        Created {new Date(campaign.createdAt).toLocaleDateString()}
+                        {campaign.scheduledFor && (
+                          <> • Scheduled for {new Date(campaign.scheduledFor).toLocaleString()}</>
+                        )}
+                      </CardDescription>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant={
+                        campaign.status === 'SENT' ? 'secondary' :
+                          campaign.status === 'SENDING' ? 'default' :
+                            campaign.status === 'SCHEDULED' ? 'outline' : 'secondary'
+                      }>
+                        {campaign.status}
+                      </Badge>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem>View Details</DropdownMenuItem>
+                          <DropdownMenuItem>Duplicate</DropdownMenuItem>
+                          {campaign.status === 'DRAFT' && (
+                            <DropdownMenuItem>Edit</DropdownMenuItem>
+                          )}
+                          <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                    <div>
-                      <p className="text-muted-foreground mb-1">Total Recipients</p>
-                      <p className="text-2xl font-bold">{campaign.totalRecipients}</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground mb-1">Sent</p>
-                      <p className="text-2xl font-bold text-green-600">{campaign.sentCount}</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground mb-1">Pending</p>
-                      <p className="text-2xl font-bold text-yellow-600">{campaign.pendingCount}</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground mb-1">Failed</p>
-                      <p className="text-2xl font-bold text-red-600">{campaign.failedCount}</p>
-                    </div>
-                  </div>
+                  <div className="space-y-4">
+                    {/* Progress */}
+                    {campaign.status === 'SENDING' || campaign.status === 'SENT' ? (
+                      <>
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-muted-foreground">Progress</span>
+                            <span className="font-medium">
+                              {campaign.sentCount} / {campaign.targetCount}
+                            </span>
+                          </div>
+                          <Progress value={(campaign.sentCount / campaign.targetCount) * 100} />
+                        </div>
 
-                  <div className="flex items-center justify-between mt-4 pt-4 border-t">
-                    <div className="text-sm text-muted-foreground">
-                      Scheduled: {new Date(campaign.scheduledAt).toLocaleString("en-AE")}
-                    </div>
-                    <Link href={`/campaigns/${campaign.id}`}>
-                      <Button variant="outline" size="sm">
-                        View Details
-                      </Button>
-                    </Link>
+                        {/* Stats */}
+                        <div className="grid grid-cols-3 gap-4">
+                          <div>
+                            <p className="text-sm text-muted-foreground">Sent</p>
+                            <p className="text-2xl font-bold">{campaign.sentCount}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-muted-foreground">Delivered</p>
+                            <p className="text-2xl font-bold">{campaign.deliveredCount}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-muted-foreground">Delivery Rate</p>
+                            <p className="text-2xl font-bold">
+                              {Math.round((campaign.deliveredCount / campaign.sentCount) * 100)}%
+                            </p>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Users className="h-4 w-4" />
+                        <span>Target: {campaign.targetCount} contacts</span>
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
-            )
-          })}
+            ))
+          ) : (
+            <EmptyState
+              icon={Megaphone}
+              title="No campaigns yet"
+              description="Create your first campaign to send broadcast messages"
+              action={{
+                label: 'Create Campaign',
+                onClick: () => router.push('/campaigns/create')
+              }}
+            />
+          )}
         </div>
-      )}
-    </div>
-  )
-}
-
-export default function CampaignsPage() {
-  return (
-    <Suspense
-      fallback={
-        <div className="flex items-center justify-center min-h-[400px]">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </div>
-      }
-    >
-      <CampaignsContent />
-    </Suspense>
+      </div>
+    </DashboardLayout>
   )
 }
