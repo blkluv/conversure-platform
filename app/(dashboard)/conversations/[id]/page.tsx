@@ -74,8 +74,8 @@ export default async function ConversationThreadPage({ params }: PageProps) {
                         </div>
 
                         <Badge variant={
-                            conversation.status === 'OPEN' ? 'default' :
-                                conversation.status === 'RESOLVED' ? 'secondary' : 'outline'
+                            conversation.status === 'ACTIVE' ? 'default' :
+                                conversation.status === 'ARCHIVED' ? 'secondary' : 'outline'
                         }>
                             {conversation.status}
                         </Badge>
@@ -111,7 +111,7 @@ export default async function ConversationThreadPage({ params }: PageProps) {
                 <div className="flex-1 overflow-y-auto bg-muted/10 p-6">
                     <div className="mx-auto max-w-4xl space-y-4">
                         {conversation.messages.map((message) => {
-                            const isIncoming = message.messageType === 'INCOMING'
+                            const isIncoming = message.direction === 'INBOUND'
 
                             return (
                                 <div
