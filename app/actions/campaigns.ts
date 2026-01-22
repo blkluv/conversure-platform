@@ -109,7 +109,7 @@ export async function updateCampaign(id: string, data: Partial<CampaignInput>) {
                 name: data.title,
                 description: data.description,
                 message: data.message,
-                scheduledAt: data.scheduledAt ? new Date(data.scheduledAt) : null,
+                ...(data.scheduledAt && { scheduledAt: new Date(data.scheduledAt) }),
                 audienceType: data.audienceType,
                 audienceIds: data.audienceIds,
                 tags: data.tags
