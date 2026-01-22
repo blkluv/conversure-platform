@@ -31,7 +31,7 @@
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
-    
+
     /* Premium Gradients */
     --gradient-primary: linear-gradient(135deg, hsl(224 76% 48%) 0%, hsl(224 76% 58%) 100%);
     --gradient-secondary: linear-gradient(135deg, hsl(172 66% 50%) 0%, hsl(172 66% 60%) 100%);
@@ -66,7 +66,7 @@
     --chart-3: 30 80% 55%;
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
-    
+
     --gradient-glass: linear-gradient(135deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.15) 100%);
   }
 }
@@ -75,11 +75,12 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
-  
+
   /* Smooth scrolling */
   html {
     scroll-behavior: smooth;
@@ -94,6 +95,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -104,6 +106,7 @@
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -115,6 +118,7 @@
     opacity: 0;
     transform: translateY(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -126,6 +130,7 @@
     opacity: 0;
     transform: scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -133,9 +138,12 @@
 }
 
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.5;
   }
@@ -145,15 +153,19 @@
   0% {
     background-position: -1000px 0;
   }
+
   100% {
     background-position: 1000px 0;
   }
 }
 
 @keyframes float {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-10px);
   }
@@ -164,6 +176,7 @@
     opacity: 0;
     transform: translateX(-30px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -175,6 +188,7 @@
     opacity: 0;
     transform: translateX(30px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -186,63 +200,62 @@
 /* ============================================ */
 
 @layer utilities {
+
   /* Animations */
   .animate-fadeIn {
     animation: fadeIn 0.5s ease-out;
   }
-  
+
   .animate-slideUp {
     animation: slideUp 0.6s ease-out;
   }
-  
+
   .animate-slideDown {
     animation: slideDown 0.6s ease-out;
   }
-  
+
   .animate-scaleIn {
     animation: scaleIn 0.4s ease-out;
   }
-  
+
   .animate-pulse-slow {
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
-  
+
   .animate-shimmer {
     animation: shimmer 2s infinite;
-    background: linear-gradient(
-      90deg,
-      hsl(var(--muted)) 0%,
-      hsl(var(--background)) 50%,
-      hsl(var(--muted)) 100%
-    );
+    background: linear-gradient(90deg,
+        hsl(var(--muted)) 0%,
+        hsl(var(--background)) 50%,
+        hsl(var(--muted)) 100%);
     background-size: 1000px 100%;
   }
-  
+
   .animate-float {
     animation: float 3s ease-in-out infinite;
   }
-  
+
   .animate-slideInLeft {
     animation: slideInLeft 0.6s ease-out;
   }
-  
+
   .animate-slideInRight {
     animation: slideInRight 0.6s ease-out;
   }
-  
+
   /* Gradients */
   .gradient-primary {
     background: var(--gradient-primary);
   }
-  
+
   .gradient-secondary {
     background: var(--gradient-secondary);
   }
-  
+
   .gradient-hero {
     background: var(--gradient-hero);
   }
-  
+
   /* Glassmorphism */
   .glass {
     background: var(--gradient-glass);
@@ -250,45 +263,115 @@
     -webkit-backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.18);
   }
-  
+
   .glass-strong {
     background: rgba(255, 255, 255, 0.15);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.25);
   }
-  
+
   /* Skeleton Loaders */
   .skeleton {
     @apply bg-muted animate-shimmer rounded;
   }
-  
+
   /* Interactive States */
   .interactive-card {
     @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:scale-[1.02];
   }
-  
+
   .interactive-button {
     @apply transition-all duration-200 active:scale-95 hover:shadow-md;
   }
-  
+
   /* Smooth transitions */
   .transition-smooth {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
-  
+
   /* Text gradients */
   .text-gradient {
     @apply bg-clip-text text-transparent;
     background-image: var(--gradient-hero);
   }
-  
+
   /* Premium shadows */
   .shadow-premium {
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.06);
   }
-  
+
   .shadow-premium-lg {
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  /* Admin Dashboard Styles Ported from active_admin/administrate */
+
+  /* Reset-like base styles for specific admin containers */
+  .admin-reset fieldset {
+    @apply bg-transparent border-0 m-0 p-0;
+  }
+
+  .admin-reset legend,
+  .admin-reset label {
+    @apply block font-medium m-0 p-0;
+  }
+
+  /* Form Elements */
+  .admin-input {
+    @apply block w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background transition-colors;
+    @apply placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2;
+    @apply disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .admin-input:hover:not(:disabled) {
+    @apply border-primary/50;
+  }
+
+  /* Tables */
+  .admin-table {
+    @apply w-full caption-bottom text-sm border-collapse text-left;
+  }
+
+  .admin-table thead tr {
+    @apply border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted;
+  }
+
+  .admin-table th {
+    @apply h-12 px-4 text-left align-middle font-medium text-muted-foreground;
+  }
+
+  .admin-table td {
+    @apply p-4 align-middle;
+  }
+
+  .admin-table tbody tr {
+    @apply border-b transition-colors hover:bg-muted/50;
+  }
+
+  /* Feature Cell Component (from Administrate custom styles) */
+  .feature-cell {
+    @apply bg-blue-50 rounded-lg float-left ml-2 mt-1.5 px-3 py-1;
+  }
+
+  .feature-cell .icon-container {
+    @apply mr-0.5;
+  }
+
+  .feature-cell .value-container {
+    @apply ml-1.5;
+  }
+
+  .feature-container {
+    @apply max-w-screen-2xl;
+  }
+
+  /* Avatar Field Styles */
+  .cell-data--avatar-field {
+    @apply leading-none text-center;
+  }
+
+  .cell-data--avatar-field img {
+    @apply rounded-full h-12 max-h-12 w-12;
   }
 }

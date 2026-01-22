@@ -1,5 +1,6 @@
 import { db } from "@/lib/db"
 import { getWhatsappClientForCompany } from "@/lib/whatsapp-provider"
+import { LeadIdentifyAction } from "@/lib/services/LeadActions"
 
 // WhatsApp warm-up schedule (weeks 1-4+)
 const WARMUP_LIMITS = {
@@ -197,25 +198,14 @@ export async function processInboundMessage({
   timestamp?: string
 }) {
   try {
-    // Find or create lead
-    let lead = await db.lead.findFirst({
-      where: {
-        companyId,
+    // Find or identify lead using robust logic (handles merging/deduplication)
+    const lead = await new LeadIdentifyAction({
+      companyId,
+      params: {
         phone: from,
+        name: from, // Initial name is phone number
       },
-    })
-
-    if (!lead) {
-      lead = await db.lead.create({
-        data: {
-          companyId,
-          name: from, // Will be updated later with actual name
-          phone: from,
-          source: "WhatsApp",
-          status: "NEW",
-        },
-      })
-    }
+    }).perform()
 
     const pendingFeedback = await db.feedback.findFirst({
       where: {
