@@ -1,106 +1,52 @@
 /**
- * Worker Orchestration
+ * BullMQ Workers Registry
  * 
- * Main worker process that polls for jobs and dispatches to processors
- * Features:
- * - Configurable polling interval
- * - Graceful shutdown on SIGTERM/SIGINT
- * - Error handling and retry logic
- * - Process registry for job type routing
+ * Starts and manages all BullMQ workers for async job processing
  */
 
-import type { ProcessorRegistry } from '../types';
-import { QueueFactory } from '../QueueFactory';
-import { processAiGeneration } from './processors/aiGeneration';
+import { createWhatsAppWebhookWorker } from './whatsappWebhookWorker';
 
-// Register job processors
-const processors: ProcessorRegistry = {
-    ai_generation: processAiGeneration,
-    campaign_send: async (job) => {
-        console.log('[Processor:Campaign] Processing campaign send:', job.id);
-        // TODO: Implement in future phase
-    },
-    crm_sync: async (job) => {
-        console.log('[Processor:CRM] Processing CRM sync:', job.id);
-        // TODO: Implement in future phase
-    },
-    lead_import: async (job) => {
-        console.log('[Processor:LeadImport] Processing lead import:', job.id);
-        // TODO: Implement in future phase
-    },
-};
+export function startWorkers() {
+    const workers = [];
 
-let isShuttingDown = false;
+    console.log('[Workers] Starting BullMQ workers...');
 
-/**
- * Start worker polling loop
- */
-export async function startWorkers(): Promise<void> {
-    console.log('🚀 [Worker] Starting job queue workers...');
-    console.log('[Worker] Polling interval: 1000ms');
-
-    const queue = QueueFactory.getQueue();
-
-    // Setup graceful shutdown
-    process.on('SIGTERM', () => gracefulShutdown());
-    process.on('SIGINT', () => gracefulShutdown());
-
-    // Main polling loop
-    while (!isShuttingDown) {
-        try {
-            // Get next job
-            const job = await queue.getNextJob();
-
-            if (!job) {
-                // No jobs available, wait before next poll
-                await sleep(1000);
-                continue;
-            }
-
-            // Get processor for job type
-            const processor = processors[job.type as keyof ProcessorRegistry];
-
-            if (!processor) {
-                console.error(`[Worker] No processor found for job type: ${job.type}`);
-                await queue.markFailed(
-                    job.id,
-                    `No processor registered for job type: ${job.type}`,
-                    false // Don't retry
-                );
-                continue;
-            }
-
-            // Process job
-            try {
-                await processor(job);
-                await queue.markCompleted(job.id);
-            } catch (error) {
-                const errorMessage = error instanceof Error ? error.message : String(error);
-                console.error(`[Worker] Job ${job.id} failed:`, errorMessage);
-
-                // Retry logic - will retry unless max attempts reached
-                await queue.markFailed(job.id, errorMessage, true);
-            }
-        } catch (error) {
-            console.error('[Worker] Polling error:', error);
-            await sleep(5000); // Back off on polling errors
-        }
+    // Start WhatsApp webhook worker
+    const whatsappWorker = createWhatsAppWebhookWorker();
+    if (whatsappWorker) {
+        workers.push(whatsappWorker);
+        console.log('[Workers] WhatsApp webhook worker started');
     }
 
-    console.log('[Worker] Shutdown complete');
+    // TODO: Add more workers as needed
+    // - AI generation worker
+    // - Campaign execution worker
+    // - Email worker
+    // - etc.
+
+    // Graceful shutdown
+    const shutdown = async () => {
+        console.log('[Workers] Shutting down workers...');
+
+        await Promise.all(
+            workers.map(async (worker) => {
+                await worker.close();
+            })
+        );
+
+        console.log('[Workers] All workers shut down');
+        process.exit(0);
+    };
+
+    process.on('SIGTERM', shutdown);
+    process.on('SIGINT', shutdown);
+
+    console.log(`[Workers] ${workers.length} worker(s) running`);
+
+    return workers;
 }
 
-/**
- * Graceful shutdown handler
- */
-function gracefulShutdown(): void {
-    console.log('\n[Worker] Received shutdown signal, stopping gracefully...');
-    isShuttingDown = true;
-}
-
-/**
- * Sleep helper
- */
-function sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+// Auto-start workers if this file is run directly
+if (require.main === module) {
+    startWorkers();
 }

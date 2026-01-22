@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "db:seed": "npx tsx prisma/seed.ts",
-    "worker": "tsx scripts/worker.ts",
+    "worker": "tsx lib/queue/workers/index.ts",
+    "worker:dev": "tsx watch lib/queue/workers/index.ts",
     "test:health": "tsx scripts/health-check.ts",
     "deploy:prod": "bash scripts/deploy-production.sh"
   },

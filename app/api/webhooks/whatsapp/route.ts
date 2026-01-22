@@ -45,14 +45,39 @@ export async function POST(request: NextRequest) {
     console.log("[WhatsApp Webhook] Received:", JSON.stringify(body, null, 2))
 
     // Log webhook event
-    await db.webhookEvent.create({
+    const webhookEvent = await db.webhookEvent.create({
       data: {
         source: "WHATSAPP",
         eventType: body.type || "unknown",
         payload: body,
       },
-    })
+    });
 
+    // Enqueue for async processing via BullMQ (if available)
+    try {
+      const { QueueFactory } = await import('@/lib/queue/QueueFactory');
+      const queue = QueueFactory.getQueue();
+
+      if (QueueFactory.isBullMQ()) {
+        await queue.addJob('whatsapp:webhook', {
+          eventId: webhookEvent.id,
+          provider: detectProvider(body)
+        }, {
+          idempotencyKey: webhookEvent.id,
+          maxAttempts: 5,
+          priority: 7
+        });
+
+        console.log(`[WhatsApp Webhook] Enqueued event ${webhookEvent.id} for async processing`);
+
+        // Return early - worker will process
+        return NextResponse.json({ success: true, eventId: webhookEvent.id, queued: true });
+      }
+    } catch (queueError) {
+      console.warn('[WhatsApp Webhook] Queue unavailable, processing synchronously:', queueError);
+    }
+
+    // Process synchronously (fallback or when using Prisma queue)
     // Determine provider format and extract relevant data
     const provider = detectProvider(body)
 
