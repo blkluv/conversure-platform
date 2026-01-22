@@ -22,7 +22,7 @@ async function getStats(companyId: string) {
     ] = await Promise.all([
         db.lead.count({ where: { companyId } }),
         db.conversation.count({
-            where: { companyId, status: { in: ['OPEN', 'PENDING'] } }
+            where: { companyId, status: { in: ['ACTIVE', 'PENDING'] } }
         }),
         db.campaign.count({
             where: { companyId, status: { in: ['SENDING', 'SCHEDULED'] } }
@@ -221,3 +221,4 @@ export default async function DashboardPage() {
         
     )
 }
+

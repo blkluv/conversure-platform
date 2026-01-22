@@ -25,7 +25,7 @@ type Conversation = {
     leadPhone: string
     lastMessage: string
     lastMessageAt: Date
-    status: 'OPEN' | 'PENDING' | 'RESOLVED'
+    status: 'ACTIVE' | 'PENDING' | 'ARCHIVED'
     unreadCount: number
     priority?: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'
 }
@@ -38,7 +38,7 @@ const mockConversations: Conversation[] = [
         leadPhone: '+971501234567',
         lastMessage: 'Hi, I\'m interested in the villa you posted',
         lastMessageAt: new Date(Date.now() - 1000 * 60 * 2),
-        status: 'OPEN',
+        status: 'ACTIVE',
         unreadCount: 3,
         priority: 'HIGH'
     },
@@ -55,7 +55,7 @@ const mockConversations: Conversation[] = [
 
 export default function ConversationsPage() {
     const router = useRouter()
-    const [filter, setFilter] = useState<'all' | 'open' | 'pending' | 'resolved'>('all')
+    const [filter, setFilter] = useState<'all' | 'ACTIVE' | 'pending' | 'ARCHIVED'>('all')
     const [searchQuery, setSearchQuery] = useState('')
 
     const filteredConversations = mockConversations.filter(conv => {
@@ -90,9 +90,9 @@ export default function ConversationsPage() {
                             <TabsTrigger value="all">All</TabsTrigger>
                             <TabsTrigger value="open">
                                 Open
-                                {mockConversations.filter(c => c.status === 'OPEN').length > 0 && (
+                                {mockConversations.filter(c => c.status === 'ACTIVE').length > 0 && (
                                     <Badge className="ml-2" variant="secondary">
-                                        {mockConversations.filter(c => c.status === 'OPEN').length}
+                                        {mockConversations.filter(c => c.status === 'ACTIVE').length}
                                     </Badge>
                                 )}
                             </TabsTrigger>
@@ -134,12 +134,12 @@ export default function ConversationsPage() {
                                                     </Badge>
                                                 )}
                                                 <Badge variant={
-                                                    conversation.status === 'OPEN' ? 'default' :
-                                                        conversation.status === 'RESOLVED' ? 'secondary' : 'outline'
+                                                    conversation.status === 'ACTIVE' ? 'default' :
+                                                        conversation.status === 'ARCHIVED' ? 'secondary' : 'outline'
                                                 }>
-                                                    {conversation.status === 'OPEN' && <MessageSquare className="mr-1 h-3 w-3" />}
+                                                    {conversation.status === 'ACTIVE' && <MessageSquare className="mr-1 h-3 w-3" />}
                                                     {conversation.status === 'PENDING' && <Clock className="mr-1 h-3 w-3" />}
-                                                    {conversation.status === 'RESOLVED' && <CheckCircle2 className="mr-1 h-3 w-3" />}
+                                                    {conversation.status === 'ARCHIVED' && <CheckCircle2 className="mr-1 h-3 w-3" />}
                                                     {conversation.status}
                                                 </Badge>
                                             </div>
@@ -175,3 +175,4 @@ export default function ConversationsPage() {
         
     )
 }
+
