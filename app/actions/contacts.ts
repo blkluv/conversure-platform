@@ -192,7 +192,7 @@ export async function getContact(id: string) {
                     },
                     orderBy: { lastMessageAt: 'desc' }
                 },
-                assignedAgent: {
+                agent: {
                     select: {
                         id: true,
                         fullName: true,
@@ -302,7 +302,7 @@ export async function bulkContactAction(action: string, contactIds: string[], pa
             case 'assign':
                 result = await db.lead.updateMany({
                     where: { id: { in: contactIds } },
-                    data: { assignedAgentId: params.agentId }
+                    data: { agentId: params.agentId }
                 })
                 break
 
