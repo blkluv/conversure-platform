@@ -27,6 +27,7 @@ model Company {
   subscriptionStatus   String? // active | trialing | past_due | canceled
   seats                Int       @default(5)
   currentPeriodEnd     DateTime?
+  trialEndsAt          DateTime? // Added for trial tracking
 
   // WhatsApp Business API Integration
   whatsappBusinessNumber String?
@@ -1293,6 +1294,7 @@ model Macro {
   description String?
   actions     Json // Action sequence
   visibility  MacroVisibility @default(GLOBAL)
+  isActive    Boolean         @default(true)
 
   createdById String?
   updatedById String?
