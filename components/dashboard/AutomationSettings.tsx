@@ -25,7 +25,7 @@ export function AutomationSettings({ currentMode }: AutomationSettingsProps) {
     setSaveStatus({ type: null, message: "" })
 
     try {
-      const result = await updateAutomationSettings({
+      const result = await updateCompanySettings({
         messageGenerationMode: selectedMode,
       })
 
@@ -65,16 +65,16 @@ export function AutomationSettings({ currentMode }: AutomationSettingsProps) {
             type="button"
             onClick={() => setSelectedMode("AI_PILOT")}
             className={`flex items-start gap-4 p-4 border-2 rounded-lg text-left transition-all ${selectedMode === "AI_PILOT"
-                ? "border-primary bg-primary/5"
-                : "border-border hover:border-primary/50"
+              ? "border-primary bg-primary/5"
+              : "border-border hover:border-primary/50"
               }`}
             aria-label="Select AI Pilot mode"
           >
             <div className="flex-shrink-0 mt-1">
               <div
                 className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedMode === "AI_PILOT"
-                    ? "border-primary bg-primary"
-                    : "border-muted-foreground"
+                  ? "border-primary bg-primary"
+                  : "border-muted-foreground"
                   }`}
               >
                 {selectedMode === "AI_PILOT" && (
@@ -107,16 +107,16 @@ export function AutomationSettings({ currentMode }: AutomationSettingsProps) {
             type="button"
             onClick={() => setSelectedMode("MANUAL_COPILOT")}
             className={`flex items-start gap-4 p-4 border-2 rounded-lg text-left transition-all ${selectedMode === "MANUAL_COPILOT"
-                ? "border-primary bg-primary/5"
-                : "border-border hover:border-primary/50"
+              ? "border-primary bg-primary/5"
+              : "border-border hover:border-primary/50"
               }`}
             aria-label="Select Manual Copilot mode"
           >
             <div className="flex-shrink-0 mt-1">
               <div
                 className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedMode === "MANUAL_COPILOT"
-                    ? "border-primary bg-primary"
-                    : "border-muted-foreground"
+                  ? "border-primary bg-primary"
+                  : "border-muted-foreground"
                   }`}
               >
                 {selectedMode === "MANUAL_COPILOT" && (
@@ -150,8 +150,8 @@ export function AutomationSettings({ currentMode }: AutomationSettingsProps) {
       {saveStatus.type && (
         <div
           className={`flex items-center gap-2 p-4 rounded-lg ${saveStatus.type === "success"
-              ? "bg-green-50 text-green-800 border border-green-200"
-              : "bg-red-50 text-red-800 border border-red-200"
+            ? "bg-green-50 text-green-800 border border-green-200"
+            : "bg-red-50 text-red-800 border border-red-200"
             }`}
           role="alert"
         >
