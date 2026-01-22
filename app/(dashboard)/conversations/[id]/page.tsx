@@ -56,7 +56,7 @@ export default async function ConversationThreadPage({ params }: PageProps) {
                 {/* Header */}
                 <div className="flex items-center justify-between border-b bg-card px-6 py-4">
                     <div className="flex items-center gap-4">
-                        <Button variant="ghost" size="icon" as Child>
+                        <Button variant="ghost" size="icon" asChild>
                             <Link href="/conversations">
                                 <ArrowLeft className="h-4 w-4" />
                             </Link>
@@ -120,8 +120,8 @@ export default async function ConversationThreadPage({ params }: PageProps) {
                                 >
                                     <div className={`max-w-[70%] space-y-1`}>
                                         <Card className={`${isIncoming
-                                                ? 'bg-card'
-                                                : 'bg-primary text-primary-foreground'
+                                            ? 'bg-card'
+                                            : 'bg-primary text-primary-foreground'
                                             }`}>
                                             <div className="p-3">
                                                 <p className="text-sm whitespace-pre-wrap">{message.body}</p>
