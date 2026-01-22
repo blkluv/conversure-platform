@@ -193,7 +193,9 @@ export async function searchConversations(query: string, page: number = 1) {
 
 /**
  * Toggle conversation priority
+ * TODO: Add priority field to Conversation model if needed
  */
+/*
 export async function toggleConversationPriority(id: string, priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT') {
     try {
         const user = await getCurrentUser()
@@ -219,6 +221,7 @@ export async function toggleConversationPriority(id: string, priority: 'LOW' | '
         return { success: false, error: error.message }
     }
 }
+*/
 
 /**
  * Mute conversation
@@ -277,12 +280,12 @@ export async function bulkConversationAction(action: string, conversationIds: st
                 })
                 break
 
-            case 'set_priority':
-                result = await db.conversation.updateMany({
-                    where: { id: { in: conversationIds } },
-                    data: { priority: params.priority }
-                })
-                break
+            // case 'set_priority':
+            //     result = await db.conversation.updateMany({
+            //         where: { id: { in: conversationIds } },
+            //         data: { priority: params.priority }
+            //     })
+            //     break
 
             default:
                 throw new Error(`Unknown action: ${action}`)
