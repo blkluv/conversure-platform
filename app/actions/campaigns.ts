@@ -61,12 +61,12 @@ export async function createCampaign(data: CampaignInput) {
                 companyId: user.companyId,
                 name: validated.title,
                 description: validated.description,
-                messageTemplate: validated.message,
-                scheduledAt: validated.scheduledAt ? new Date(validated.scheduledAt) : undefined,
+                message: validated.message,
+                scheduledAt: validated.scheduledAt ? new Date(validated.scheduledAt) : null,
                 status: validated.scheduledAt ? 'SCHEDULED' : 'DRAFT',
-                targetAudience: validated.audienceType,
-                targetLeadIds: validated.audienceIds || [],
-                filterTags: validated.tags || []
+                audienceType: validated.audienceType,
+                audienceIds: validated.audienceIds || [],
+                tags: validated.tags || []
             }
         })
 
@@ -108,11 +108,11 @@ export async function updateCampaign(id: string, data: Partial<CampaignInput>) {
             data: {
                 name: data.title,
                 description: data.description,
-                messageTemplate: data.message,
-                scheduledAt: data.scheduledAt ? new Date(data.scheduledAt) : undefined,
-                targetAudience: data.audienceType,
-                targetLeadIds: data.audienceIds,
-                filterTags: data.tags
+                message: data.message,
+                scheduledAt: data.scheduledAt ? new Date(data.scheduledAt) : null,
+                audienceType: data.audienceType,
+                audienceIds: data.audienceIds,
+                tags: data.tags
             }
         })
 
