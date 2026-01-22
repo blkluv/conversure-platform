@@ -85,7 +85,7 @@ export async function getConversations(filters?: {
 /**
  * Update conversation status
  */
-export async function updateConversationStatus(id: string, status: 'OPEN' | 'PENDING' | 'RESOLVED') {
+export async function updateConversationStatus(id: string, status: 'ACTIVE' | 'PENDING' | 'ARCHIVED' | 'CLOSED') {
     try {
         const user = await getCurrentUser()
         if (!user) throw new Error('Unauthorized')
@@ -233,7 +233,7 @@ export async function muteConversation(id: string) {
 
         const updated = await db.conversation.update({
             where: { id },
-            data: { status: 'SNOOZED' }
+            data: { status: 'PENDING' }
         })
 
         revalidatePath(`/conversations/${id}`)
