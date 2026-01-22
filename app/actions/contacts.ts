@@ -219,9 +219,8 @@ export async function updateContact(id: string, data: {
     name?: string
     email?: string
     phone?: string
-    status?: string
+    status?: 'NEW' | 'HOT' | 'WARM' | 'COLD' | 'FOLLOW_UP' | 'VIEWING_SCHEDULED' | 'OFFER_MADE' | 'CLOSED_WON' | 'CLOSED_LOST'
     tags?: string[]
-    notes?: string
 }) {
     try {
         const user = await getCurrentUser()
@@ -237,7 +236,13 @@ export async function updateContact(id: string, data: {
 
         const updated = await db.lead.update({
             where: { id },
-            data
+            data: {
+                ...(data.name && { name: data.name }),
+                ...(data.email && { email: data.email }),
+                ...(data.phone && { phone: data.phone }),
+                ...(data.status && { status: data.status }),
+                ...(data.tags && { tags: data.tags })
+            }
         })
 
         revalidatePath(`/contacts/${id}`)
