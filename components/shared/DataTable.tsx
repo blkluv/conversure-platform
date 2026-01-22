@@ -74,7 +74,7 @@ export function DataTable<TData, TValue>({
                         aria-label="Select all"
                     />
                 ),
-                cell: ({ row }) => (
+                cell: ({ row }: { row: any }) => (
                     <Checkbox
                         checked={row.getIsSelected()}
                         onCheckedChange={(value) => row.toggleSelected(!!value)}
