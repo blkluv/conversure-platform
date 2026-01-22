@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { updateAutomationSettings } from "@/app/actions/settings"
+import { updateCompanySettings } from "@/app/actions/settings"
 import { Loader2, CheckCircle2, AlertCircle, Zap } from "lucide-react"
 import { useRouter } from "next/navigation"
 
@@ -64,20 +64,18 @@ export function AutomationSettings({ currentMode }: AutomationSettingsProps) {
           <button
             type="button"
             onClick={() => setSelectedMode("AI_PILOT")}
-            className={`flex items-start gap-4 p-4 border-2 rounded-lg text-left transition-all ${
-              selectedMode === "AI_PILOT"
+            className={`flex items-start gap-4 p-4 border-2 rounded-lg text-left transition-all ${selectedMode === "AI_PILOT"
                 ? "border-primary bg-primary/5"
                 : "border-border hover:border-primary/50"
-            }`}
+              }`}
             aria-label="Select AI Pilot mode"
           >
             <div className="flex-shrink-0 mt-1">
               <div
-                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                  selectedMode === "AI_PILOT"
+                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedMode === "AI_PILOT"
                     ? "border-primary bg-primary"
                     : "border-muted-foreground"
-                }`}
+                  }`}
               >
                 {selectedMode === "AI_PILOT" && (
                   <div className="w-2 h-2 rounded-full bg-white" />
@@ -108,20 +106,18 @@ export function AutomationSettings({ currentMode }: AutomationSettingsProps) {
           <button
             type="button"
             onClick={() => setSelectedMode("MANUAL_COPILOT")}
-            className={`flex items-start gap-4 p-4 border-2 rounded-lg text-left transition-all ${
-              selectedMode === "MANUAL_COPILOT"
+            className={`flex items-start gap-4 p-4 border-2 rounded-lg text-left transition-all ${selectedMode === "MANUAL_COPILOT"
                 ? "border-primary bg-primary/5"
                 : "border-border hover:border-primary/50"
-            }`}
+              }`}
             aria-label="Select Manual Copilot mode"
           >
             <div className="flex-shrink-0 mt-1">
               <div
-                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                  selectedMode === "MANUAL_COPILOT"
+                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedMode === "MANUAL_COPILOT"
                     ? "border-primary bg-primary"
                     : "border-muted-foreground"
-                }`}
+                  }`}
               >
                 {selectedMode === "MANUAL_COPILOT" && (
                   <div className="w-2 h-2 rounded-full bg-white" />
@@ -153,11 +149,10 @@ export function AutomationSettings({ currentMode }: AutomationSettingsProps) {
       {/* Save Status */}
       {saveStatus.type && (
         <div
-          className={`flex items-center gap-2 p-4 rounded-lg ${
-            saveStatus.type === "success"
+          className={`flex items-center gap-2 p-4 rounded-lg ${saveStatus.type === "success"
               ? "bg-green-50 text-green-800 border border-green-200"
               : "bg-red-50 text-red-800 border border-red-200"
-          }`}
+            }`}
           role="alert"
         >
           {saveStatus.type === "success" ? (
