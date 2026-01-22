@@ -35,11 +35,7 @@ export async function getCampaigns() {
         const campaigns = await db.campaign.findMany({
             where: { companyId: user.companyId },
             orderBy: { createdAt: 'desc' },
-            include: {
-                _count: {
-                    select: { messages: true }
-                }
-            }
+            // No _count needed - Campaign has no direct relations to count
         })
 
         return { success: true, data: campaigns }
