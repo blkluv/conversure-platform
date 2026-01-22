@@ -78,6 +78,12 @@ model Company {
   // Phase 3: Webhook audit trail
   webhookEvents         ProviderWebhookEvent[]
   
+  // Team Collaboration
+  cannedResponses       CannedResponse[]
+  labels                Label[]
+  teams                 Team[]
+  automationRules       AutomationRule[]
+  
   @@index([whatsappBusinessNumber])
 }
 
@@ -257,6 +263,11 @@ model User {
   
   feedbacks       Feedback[]
   feedbackRequests FeedbackRequest[]
+  
+  // Team Collaboration
+  teams               Team[]             @relation("TeamMembers")
+  createdCanned       CannedResponse[]
+  createdAutomations  AutomationRule[]
   
   @@index([email])
   @@index([companyId])
@@ -1008,5 +1019,80 @@ model OptOutList {
   @@unique([companyId, phone])
   @@index([phone])
   @@index([companyId])
+}
+
+// ============================================
+// TEAM COLLABORATION MODELS
+// ============================================
+
+model CannedResponse {
+  id        String   @id @default(cuid())
+  companyId String
+  shortCode String   // Quick code to trigger response (e.g., "/villa")
+  content   String   @db.Text
+  
+  createdById String?  // User who created it
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdBy User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  
+  @@unique([companyId, shortCode])
+  @@index([companyId])
+}
+
+model Label {
+  id            String   @id @default(cuid())
+  companyId     String
+  title         String
+  description   String?
+  color         String   @default("#1f93ff")
+  showOnSidebar Boolean  @default(true)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  @@index([companyId])
+}
+
+model Team {
+  id              String   @id @default(cuid())
+  companyId       String
+  name            String
+  description     String?
+  allowAutoAssign Boolean  @default(true)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  members   User[]   @relation("TeamMembers")
+  
+  @@index([companyId])
+}
+
+model AutomationRule {
+  id          String   @id @default(cuid())
+  companyId   String
+  name        String
+  description String?
+  eventName   String   // "conversation_created", "message_created", etc.
+  conditions  Json     // Filter conditions
+  actions     Json     // Actions to perform
+  active      Boolean  @default(true)
+  
+  createdById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdBy   User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  
+  @@index([companyId])
+  @@index([eventName])
+  @@index([active])
 }
 
