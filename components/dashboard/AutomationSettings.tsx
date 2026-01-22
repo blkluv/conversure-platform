@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { updateCompanySettings } from "@/app/actions/settings"
+import { updateAutomationSettings } from "@/app/actions/settings"
 import { Loader2, CheckCircle2, AlertCircle, Zap } from "lucide-react"
 import { useRouter } from "next/navigation"
 
@@ -25,12 +25,9 @@ export function AutomationSettings({ currentMode }: AutomationSettingsProps) {
     setSaveStatus({ type: null, message: "" })
 
     try {
-      // TODO: messageGenerationMode field doesn't exist in Company model yet
-      // For now, just refresh to show the UI works
-      const result: { success: boolean; error?: string } = { success: true }
-      // const result = await updateCompanySettings({
-      //   messageGenerationMode: selectedMode,
-      // })
+      const result = await updateAutomationSettings({
+        messageGenerationMode: selectedMode,
+      })
 
       if (result.success) {
         setSaveStatus({
