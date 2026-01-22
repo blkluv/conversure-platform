@@ -40,7 +40,7 @@ export default function TeamsPage() {
                 {mockTeams.length > 0 ? (
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                         {mockTeams.map((team) => (
-                            <Card key={team.id} className="cursor-pointer hover:bg-accent" asChild>
+                            <Card key={team.id} className="cursor-pointer hover:bg-accent">
                                 <Link href={`/teams/${team.id}`}>
                                     <CardHeader>
                                         <CardTitle className="flex items-center justify-between">
@@ -73,4 +73,5 @@ export default function TeamsPage() {
         
     )
 }
+
 
