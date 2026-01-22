@@ -151,7 +151,7 @@ export async function exportCSATData(filters?: any) {
             r.lead?.name || '',
             r.lead?.phone || '',
             r.rating.toString(),
-            r.comments || '',
+            r.comment || '',
             r.agent?.fullName || ''
         ])
 
