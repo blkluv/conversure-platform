@@ -7,7 +7,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { DashboardLayout } from '@/components/layout'
+
 import { DataTable, SortableHeader, PageHeader, EmptyState } from '@/components/shared'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -198,16 +198,16 @@ export default function ContactsPage() {
 
   if (loading) {
     return (
-      <DashboardLayout>
+      
         <div className="p-6">
           <div className="h-64 animate-pulse bg-muted rounded-lg" />
         </div>
-      </DashboardLayout>
+      
     )
   }
 
   return (
-    <DashboardLayout>
+    
       <div className="space-y-6 p-6">
         <PageHeader
           title="Contacts"
@@ -292,6 +292,6 @@ export default function ContactsPage() {
           />
         )}
       </div>
-    </DashboardLayout>
+    
   )
 }

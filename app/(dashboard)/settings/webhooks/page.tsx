@@ -6,7 +6,7 @@
 
 'use client'
 
-import { DashboardLayout } from '@/components/layout'
+
 import { PageHeader } from '@/components/shared'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -20,7 +20,7 @@ const mockWebhooks = [
 
 export default function WebhooksPage() {
     return (
-        <DashboardLayout>
+        
             <div className="space-y-6 p-6">
                 <PageHeader
                     title="Webhooks"
@@ -60,6 +60,6 @@ export default function WebhooksPage() {
                     ))}
                 </div>
             </div>
-        </DashboardLayout>
+        
     )
 }

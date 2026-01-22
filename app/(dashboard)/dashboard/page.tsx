@@ -149,7 +149,7 @@ async function RecentActivity() {
 
 export default async function DashboardPage() {
     return (
-        <DashboardLayout>
+        
             <div className="space-y-6 p-6">
                 <PageHeader
                     title="Dashboard"
@@ -218,6 +218,6 @@ export default async function DashboardPage() {
                     </Card>
                 </div>
             </div>
-        </DashboardLayout>
+        
     )
 }

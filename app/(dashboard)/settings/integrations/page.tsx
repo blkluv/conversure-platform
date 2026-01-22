@@ -6,7 +6,7 @@
 
 'use client'
 
-import { DashboardLayout } from '@/components/layout'
+
 import { PageHeader } from '@/components/shared'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -20,7 +20,7 @@ const integrations = [
 
 export default function IntegrationsPage() {
     return (
-        <DashboardLayout>
+        
             <div className="space-y-6 p-6">
                 <PageHeader
                     title="Integrations"
@@ -62,6 +62,6 @@ export default function IntegrationsPage() {
                     ))}
                 </div>
             </div>
-        </DashboardLayout>
+        
     )
 }

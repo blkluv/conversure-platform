@@ -6,7 +6,7 @@
 
 'use client'
 
-import { DashboardLayout } from '@/components/layout'
+
 import { PageHeader } from '@/components/shared'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -21,7 +21,7 @@ const mockLabels = [
 
 export default function LabelsPage() {
     return (
-        <DashboardLayout>
+        
             <div className="space-y-6 p-6">
                 <PageHeader
                     title="Labels"
@@ -58,6 +58,6 @@ export default function LabelsPage() {
                     ))}
                 </div>
             </div>
-        </DashboardLayout>
+        
     )
 }

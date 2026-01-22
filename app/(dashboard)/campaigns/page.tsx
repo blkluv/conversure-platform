@@ -7,7 +7,7 @@
 'use client'
 
 import { useState } from 'react'
-import { DashboardLayout } from '@/components/layout'
+
 import { PageHeader, EmptyState, StatsCard } from '@/components/shared'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -68,7 +68,7 @@ export default function CampaignsPage() {
   }
 
   return (
-    <DashboardLayout>
+    
       <div className="space-y-6 p-6">
         <PageHeader
           title="Campaigns"
@@ -210,6 +210,6 @@ export default function CampaignsPage() {
           )}
         </div>
       </div>
-    </DashboardLayout>
+    
   )
 }

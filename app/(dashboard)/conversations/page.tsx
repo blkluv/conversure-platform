@@ -7,7 +7,7 @@
 'use client'
 
 import { useState } from 'react'
-import { DashboardLayout } from '@/components/layout'
+
 import { PageHeader, EmptyState } from '@/components/shared'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -66,7 +66,7 @@ export default function ConversationsPage() {
     })
 
     return (
-        <DashboardLayout>
+        
             <div className="flex h-full flex-col p-6">
                 <PageHeader
                     title="Conversations"
@@ -172,6 +172,6 @@ export default function ConversationsPage() {
                     )}
                 </div>
             </div>
-        </DashboardLayout>
+        
     )
 }

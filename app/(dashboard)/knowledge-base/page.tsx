@@ -6,7 +6,7 @@
 
 'use client'
 
-import { DashboardLayout } from '@/components/layout'
+
 import { PageHeader, EmptyState } from '@/components/shared'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -21,7 +21,7 @@ const mockPortals = [
 
 export default function KnowledgeBasePage() {
     return (
-        <DashboardLayout>
+        
             <div className="space-y-6 p-6">
                 <PageHeader
                     title="Knowledge Base"
@@ -73,6 +73,6 @@ export default function KnowledgeBasePage() {
                     />
                 )}
             </div>
-        </DashboardLayout>
+        
     )
 }

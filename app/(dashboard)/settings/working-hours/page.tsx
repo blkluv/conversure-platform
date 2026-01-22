@@ -6,7 +6,7 @@
 
 'use client'
 
-import { DashboardLayout } from '@/components/layout'
+
 import { PageHeader } from '@/components/shared'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -25,7 +25,7 @@ const dayData = [
 
 export default function WorkingHoursPage() {
     return (
-        <DashboardLayout>
+        
             <div className="space-y-6 p-6">
                 <PageHeader
                     title="Working Hours"
@@ -60,6 +60,6 @@ export default function WorkingHoursPage() {
                     </CardContent>
                 </Card>
             </div>
-        </DashboardLayout>
+        
     )
 }

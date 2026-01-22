@@ -6,7 +6,7 @@
 
 'use client'
 
-import { DashboardLayout } from '@/components/layout'
+
 import { PageHeader } from '@/components/shared'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -20,7 +20,7 @@ const mockNotifications = [
 
 export default function NotificationsPage() {
     return (
-        <DashboardLayout>
+        
             <div className="space-y-6 p-6">
                 <PageHeader
                     title="Notifications"
@@ -63,6 +63,6 @@ export default function NotificationsPage() {
                     ))}
                 </div>
             </div>
-        </DashboardLayout>
+        
     )
 }

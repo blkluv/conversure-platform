@@ -6,14 +6,14 @@
 
 'use client'
 
-import { DashboardLayout } from '@/components/layout'
+
 import { PageHeader, StatsCard } from '@/components/shared'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ThumbsUp, ThumbsDown, Meh, TrendingUp } from 'lucide-react'
 
 export default function CSATPage() {
     return (
-        <DashboardLayout>
+        
             <div className="space-y-6 p-6">
                 <PageHeader
                     title="Customer Satisfaction"
@@ -68,6 +68,6 @@ export default function CSATPage() {
                     </CardContent>
                 </Card>
             </div>
-        </DashboardLayout>
+        
     )
 }

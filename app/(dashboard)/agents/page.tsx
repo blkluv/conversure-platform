@@ -7,7 +7,7 @@
 'use client'
 
 import { useState } from 'react'
-import { DashboardLayout } from '@/components/layout'
+
 import { DataTable, SortableHeader, PageHeader, EmptyState } from '@/components/shared'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -87,7 +87,7 @@ const columns: ColumnDef<Agent>[] = [
 
 export default function AgentsPage() {
     return (
-        <DashboardLayout>
+        
             <div className="space-y-6 p-6">
                 <PageHeader
                     title="Agents"
@@ -121,6 +121,6 @@ export default function AgentsPage() {
                     />
                 )}
             </div>
-        </DashboardLayout>
+        
     )
 }

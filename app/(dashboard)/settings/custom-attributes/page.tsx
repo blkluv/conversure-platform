@@ -6,7 +6,7 @@
 
 'use client'
 
-import { DashboardLayout } from '@/components/layout'
+
 import { PageHeader } from '@/components/shared'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -26,7 +26,7 @@ const mockAttributes = {
 
 export default function CustomAttributesPage() {
     return (
-        <DashboardLayout>
+        
             <div className="space-y-6 p-6">
                 <PageHeader
                     title="Custom Attributes"
@@ -87,6 +87,6 @@ export default function CustomAttributesPage() {
                     </TabsContent>
                 </Tabs>
             </div>
-        </DashboardLayout>
+        
     )
 }

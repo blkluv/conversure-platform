@@ -8,7 +8,7 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { DashboardLayout } from '@/components/layout'
+
 import { PageHeader } from '@/components/shared'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -59,7 +59,7 @@ export default function ContactFormPage() {
     }
 
     return (
-        <DashboardLayout>
+        
             <div className="space-y-6 p-6">
                 <PageHeader
                     title="New Contact"
@@ -207,6 +207,6 @@ export default function ContactFormPage() {
                     </div>
                 </form>
             </div>
-        </DashboardLayout>
+        
     )
 }

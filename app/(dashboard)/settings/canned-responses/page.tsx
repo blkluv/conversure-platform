@@ -6,7 +6,7 @@
 
 'use client'
 
-import { DashboardLayout } from '@/components/layout'
+
 import { DataTable, SortableHeader, PageHeader } from '@/components/shared'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -54,7 +54,7 @@ const mockData: CannedResponse[] = [
 
 export default function CannedResponsesPage() {
     return (
-        <DashboardLayout>
+        
             <div className="space-y-6 p-6">
                 <PageHeader
                     title="Quick Replies"
@@ -68,6 +68,6 @@ export default function CannedResponsesPage() {
                 />
                 <DataTable columns={columns} data={mockData} searchKey="shortCode" />
             </div>
-        </DashboardLayout>
+        
     )
 }

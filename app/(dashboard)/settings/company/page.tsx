@@ -6,7 +6,7 @@
 
 'use client'
 
-import { DashboardLayout } from '@/components/layout'
+
 import { PageHeader } from '@/components/shared'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -16,7 +16,7 @@ import { Loader2 } from 'lucide-react'
 
 export default function CompanySettingsPage() {
     return (
-        <DashboardLayout>
+        
             <div className="space-y-6 p-6">
                 <PageHeader
                     title="Company Settings"
@@ -75,6 +75,6 @@ export default function CompanySettingsPage() {
                     </Button>
                 </form>
             </div>
-        </DashboardLayout>
+        
     )
 }

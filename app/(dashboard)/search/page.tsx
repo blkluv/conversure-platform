@@ -7,7 +7,7 @@
 'use client'
 
 import { useState } from 'react'
-import { DashboardLayout } from '@/components/layout'
+
 import { PageHeader } from '@/components/shared'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
@@ -19,7 +19,7 @@ export default function GlobalSearchPage() {
     const [query, setQuery] = useState('')
 
     return (
-        <DashboardLayout>
+        
             <div className="space-y-6 p-6">
                 <PageHeader
                     title="Search"
@@ -71,6 +71,6 @@ export default function GlobalSearchPage() {
                     </TabsContent>
                 </Tabs>
             </div>
-        </DashboardLayout>
+        
     )
 }
