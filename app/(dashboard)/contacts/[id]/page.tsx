@@ -77,14 +77,6 @@ export default async function ContactDetailPage({ params }: PageProps) {
                                         </AvatarFallback>
                                     </Avatar>
                                     <h3 className="mt-4 text-xl font-semibold">{contact.name || 'Unnamed'}</h3>
-                                    {contact.leadStatus && (
-                                        <Badge className="mt-2" variant={
-                                            contact.leadStatus === 'HOT' ? 'destructive' :
-                                                contact.leadStatus === 'WARM' ? 'default' : 'secondary'
-                                        }>
-                                            {contact.leadStatus}
-                                        </Badge>
-                                    )}
                                 </div>
 
                                 <div className="mt-6 space-y-3">

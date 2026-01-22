@@ -15,90 +15,90 @@ datasource db {
 // ============================================
 
 model Company {
-  id                    String   @id @default(cuid())
-  name                  String
-  domain                String?
-  country               String   @default("UAE")
-  city                  String?
-  
-  stripeCustomerId      String?  @unique
-  stripeSubscriptionId  String?
-  plan                  Plan     @default(STARTER)
-  subscriptionStatus    String?  // active | trialing | past_due | canceled
-  seats                 Int      @default(5)
-  currentPeriodEnd      DateTime?
-  
+  id      String  @id @default(cuid())
+  name    String
+  domain  String?
+  country String  @default("UAE")
+  city    String?
+
+  stripeCustomerId     String?   @unique
+  stripeSubscriptionId String?
+  plan                 Plan      @default(STARTER)
+  subscriptionStatus   String? // active | trialing | past_due | canceled
+  seats                Int       @default(5)
+  currentPeriodEnd     DateTime?
+
   // WhatsApp Business API Integration
   whatsappBusinessNumber String?
-  wabaProvider          String?  // e.g., "360dialog", "Twilio", "Meta Cloud"
-  wabaApiKey            String?  // Encrypted in production
-  wabaWebhookToken      String?
-  wabaStatus            WabaStatus @default(PENDING)
-  
+  wabaProvider           String? // e.g., "360dialog", "Twilio", "Meta Cloud"
+  wabaApiKey             String? // Encrypted in production
+  wabaWebhookToken       String?
+  wabaStatus             WabaStatus @default(PENDING)
+
   // Bitrix24 CRM Integration
-  bitrixDomain          String?
-  bitrixWebhookUrl      String?
-  bitrixAccessToken     String?  // Encrypted in production
-  
+  bitrixDomain      String?
+  bitrixWebhookUrl  String?
+  bitrixAccessToken String? // Encrypted in production
+
   // AI Integration
-  aiProvider            AiProvider @default(OPENAI)
-  aiTone                String?    // "formal", "friendly", "luxury"
-  aiLanguages           String?    // "en,ar"
-  aiEnabled             Boolean    @default(true)
-  
+  aiProvider  AiProvider @default(OPENAI)
+  aiTone      String? // "formal", "friendly", "luxury"
+  aiLanguages String? // "en,ar"
+  aiEnabled   Boolean    @default(true)
+
   // Warm-up tracking
-  warmupStage           Int      @default(1) // Week number (1-4+)
-  
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-  
+  warmupStage Int @default(1) // Week number (1-4+)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Relations
-  users                 User[]
-  leads                 Lead[]
-  conversations         Conversation[]
-  templates             Template[]
-  warmupPlans           WarmupPlan[]
-  agentQuotas           AgentQuota[]
-  whatsappNumbers       WhatsAppNumber[]
-  
-  paymentEvents         PaymentEvent[]
-  feedbacks             Feedback[]
-  feedbackTemplates     FeedbackTemplate[]
-  feedbackRequests      FeedbackRequest[]
-  campaigns             Campaign[]
-  contacts              Contact[]
-  importBatches         ImportBatch[]
-  companySettings       CompanySettings? // Added relation to CompanySettings
-  
+  users           User[]
+  leads           Lead[]
+  conversations   Conversation[]
+  templates       Template[]
+  warmupPlans     WarmupPlan[]
+  agentQuotas     AgentQuota[]
+  whatsappNumbers WhatsAppNumber[]
+
+  paymentEvents     PaymentEvent[]
+  feedbacks         Feedback[]
+  feedbackTemplates FeedbackTemplate[]
+  feedbackRequests  FeedbackRequest[]
+  campaigns         Campaign[]
+  contacts          Contact[]
+  importBatches     ImportBatch[]
+  companySettings   CompanySettings? // Added relation to CompanySettings
+
   // AI Relations
-  aiPrompts             AiPrompt[]
-  aiSafetyViolations    AiSafetyViolation[]
-  optOutList            OptOutList[]
-  
+  aiPrompts          AiPrompt[]
+  aiSafetyViolations AiSafetyViolation[]
+  optOutList         OptOutList[]
+
   // Phase 3: Webhook audit trail
-  webhookEvents         ProviderWebhookEvent[]
-  
+  webhookEvents ProviderWebhookEvent[]
+
   // Team Collaboration
-  cannedResponses       CannedResponse[]
-  labels                Label[]
-  teams                 Team[]
-  automationRules       AutomationRule[]
-  
+  cannedResponses CannedResponse[]
+  labels          Label[]
+  teams           Team[]
+  automationRules AutomationRule[]
+
   // Knowledge Base
-  portals               Portal[]
-  
+  portals Portal[]
+
   // Advanced Features
   customAttributeDefinitions CustomAttributeDefinition[]
-  agentBots             AgentBot[]
-  macros                Macro[]
-  notificationSettings  NotificationSetting[]
-  notifications         Notification[]
-  webhooks              Webhook[]
-  workingHours          WorkingHour[]
-  dashboardApps         DashboardApp[]
-  oauthIntegrations     OAuthIntegration[]
-  uploads               Upload[]
-  
+  agentBots                  AgentBot[]
+  macros                     Macro[]
+  notificationSettings       NotificationSetting[]
+  notifications              Notification[]
+  webhooks                   Webhook[]
+  workingHours               WorkingHour[]
+  dashboardApps              DashboardApp[]
+  oauthIntegrations          OAuthIntegration[]
+  uploads                    Upload[]
+
   @@index([whatsappBusinessNumber])
 }
 
@@ -124,14 +124,14 @@ enum AiProvider {
 }
 
 enum WhatsappProvider {
-  WABA       // WhatsApp Business API (Meta/360dialog/Twilio)
-  CHATWOOT   // Chatwoot (open source customer engagement platform)
-  EVOLUTION  // Evolution API (WhatsApp Web gateway)
+  WABA // WhatsApp Business API (Meta/360dialog/Twilio)
+  CHATWOOT // Chatwoot (open source customer engagement platform)
+  EVOLUTION // Evolution API (WhatsApp Web gateway)
 }
 
 enum MessageGenerationMode {
-  AI_PILOT        // AI drafts and sends automatically
-  MANUAL_COPILOT  // AI drafts, agent approves before sending
+  AI_PILOT // AI drafts and sends automatically
+  MANUAL_COPILOT // AI drafts, agent approves before sending
 }
 
 enum JobStatus {
@@ -172,86 +172,86 @@ enum ViolationSeverity {
 }
 
 model CompanySettings {
-  id                      String                  @id @default(cuid())
-  companyId               String                  @unique
-  whatsappProvider        WhatsappProvider        @default(WABA)
-  
+  id               String           @id @default(cuid())
+  companyId        String           @unique
+  whatsappProvider WhatsappProvider @default(WABA)
+
   // Automation Settings
-  messageGenerationMode   MessageGenerationMode   @default(MANUAL_COPILOT)
-  
+  messageGenerationMode MessageGenerationMode @default(MANUAL_COPILOT)
+
   // Chatwoot credentials (optional per company)
-  chatwootBaseUrl         String?
-  chatwootApiToken        String?  // Encrypted in production
-  chatwootAccountId       String?
-  chatwootInboxId         String?
-  
+  chatwootBaseUrl   String?
+  chatwootApiToken  String? // Encrypted in production
+  chatwootAccountId String?
+  chatwootInboxId   String?
+
   // Evolution API credentials (optional per company)
-  evolutionBaseUrl        String?
-  evolutionInstanceId     String?
-  evolutionApiToken       String?  // Encrypted in production
-  
+  evolutionBaseUrl    String?
+  evolutionInstanceId String?
+  evolutionApiToken   String? // Encrypted in production
+
   // ============================================
   // AI POLICY CONFIGURATION
   // ============================================
-  
+
   // AI Mode
-  aiEnabled                 Boolean                 @default(true)
-  aiMode                    MessageGenerationMode   @default(MANUAL_COPILOT)
-  
+  aiEnabled Boolean               @default(true)
+  aiMode    MessageGenerationMode @default(MANUAL_COPILOT)
+
   // Intent Rules (JSON arrays of IntentType strings)
-  aiAllowedIntents          String[]  @default(["INQUIRY", "VIEWING_REQUEST", "FOLLOW_UP"])
-  aiAutoSendIntents         String[]  @default([])  // Empty by default (manual approval)
-  
+  aiAllowedIntents  String[] @default(["INQUIRY", "VIEWING_REQUEST", "FOLLOW_UP"])
+  aiAutoSendIntents String[] @default([]) // Empty by default (manual approval)
+
   // Safety Thresholds
-  aiMinConfidence           Float    @default(0.75)
-  aiMaxMessageLength        Int      @default(400)
-  aiMaxRiskScore            Int      @default(30)
-  
+  aiMinConfidence    Float @default(0.75)
+  aiMaxMessageLength Int   @default(400)
+  aiMaxRiskScore     Int   @default(30)
+
   // Tone & Language
-  aiTone                    String   @default("professional")
-  aiLanguages               String[] @default(["en", "ar"])
-  
+  aiTone      String   @default("professional")
+  aiLanguages String[] @default(["en", "ar"])
+
   // Throttling
-  aiMaxMessagesPerDay       Int      @default(100)
-  aiMaxConsecutiveReplies   Int      @default(3)
-  
+  aiMaxMessagesPerDay     Int @default(100)
+  aiMaxConsecutiveReplies Int @default(3)
+
   // Opt-out Enforcement
-  aiRespectOptOut           Boolean  @default(true)
-  aiOptOutKeywords          String[] @default(["stop", "unsubscribe", "opt out", "لا تتصل", "توقف"])
-  
+  aiRespectOptOut  Boolean  @default(true)
+  aiOptOutKeywords String[] @default(["stop", "unsubscribe", "opt out", "لا تتصل", "توقف"])
+
   // Escalation Rules
-  aiEscalateKeywords        String[] @default(["manager", "complaint", "مدير", "شكوى"])
-  aiEscalateNegativeSentiment Boolean @default(true)
-  
+  aiEscalateKeywords          String[] @default(["manager", "complaint", "مدير", "شكوى"])
+  aiEscalateNegativeSentiment Boolean  @default(true)
+
   // Cost Controls
-  aiDailyBudgetUsd          Float?   // null = no limit
-  aiMonthlyBudgetUsd        Float?   // null = no limit
-  aiCurrentMonthSpend       Float    @default(0)
-  aiBudgetResetAt           DateTime?
-  
+  aiDailyBudgetUsd    Float? // null = no limit
+  aiMonthlyBudgetUsd  Float? // null = no limit
+  aiCurrentMonthSpend Float     @default(0)
+  aiBudgetResetAt     DateTime?
+
   // ============================================
   // BRANDING SETTINGS
   // ============================================
-  logoUrl                   String?   // Company logo URL
-  faviconUrl                String?   // Website favicon URL
-  primaryBrandColor         String?   // Hex color code
-  secondaryBrandColor       String?   // Hex color code
-  
+  logoUrl             String? // Company logo URL
+  faviconUrl          String? // Website favicon URL
+  primaryBrandColor   String? // Hex color code
+  secondaryBrandColor String? // Hex color code
+
   // ============================================
   // SEO & ANALYTICS SETTINGS
   // ============================================
-  seoMetaTitle              String?
-  seoMetaDescription        String?
-  seoKeywords               String[]  @default([])
-  seoOgImageUrl             String?   // OpenGraph image
-  googleAnalyticsId         String?   // GA4 Measurement ID
-  googleSearchConsoleCode   String?   // GSC verification code
-  
-  createdAt               DateTime @default(now())
-  updatedAt               DateTime @updatedAt
-  
-  company                 Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
+  seoMetaTitle            String?
+  seoMetaDescription      String?
+  seoKeywords             String[] @default([])
+  seoOgImageUrl           String? // OpenGraph image
+  googleAnalyticsId       String? // GA4 Measurement ID
+  googleSearchConsoleCode String? // GSC verification code
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
   @@index([companyId])
 }
 
@@ -263,38 +263,38 @@ model User {
   role         UserRole
   passwordHash String
   isActive     Boolean  @default(true)
-  
-  companyId    String
-  company      Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  
+
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Relations
-  agentQuota      AgentQuota?
-  assignedLeads   Lead[]
-  conversations   Conversation[]
-  messages        Message[]
-  
-  feedbacks       Feedback[]
+  agentQuota    AgentQuota?
+  assignedLeads Lead[]
+  conversations Conversation[]
+  messages      Message[]
+
+  feedbacks        Feedback[]
   feedbackRequests FeedbackRequest[]
-  
+
   // Team Collaboration
-  teams               Team[]             @relation("TeamMembers")
-  createdCanned       CannedResponse[]
-  createdAutomations  AutomationRule[]
-  
+  teams              Team[]           @relation("TeamMembers")
+  createdCanned      CannedResponse[]
+  createdAutomations AutomationRule[]
+
   // Knowledge Base
-  articles            Article[]
-  
+  articles Article[]
+
   // Advanced Features
-  createdMacros       Macro[]            @relation("MacroCreator")
-  updatedMacros       Macro[]            @relation("MacroUpdater")
+  createdMacros        Macro[]               @relation("MacroCreator")
+  updatedMacros        Macro[]               @relation("MacroUpdater")
   notificationSettings NotificationSetting[]
-  notifications       Notification[]
-  dashboardApps       DashboardApp[]
-  uploads             Upload[]
-  
+  notifications        Notification[]
+  dashboardApps        DashboardApp[]
+  uploads              Upload[]
+
   @@index([email])
   @@index([companyId])
 }
@@ -306,71 +306,71 @@ enum UserRole {
 }
 
 model AgentQuota {
-  id                String   @id @default(cuid())
-  agentId           String   @unique
-  agent             User     @relation(fields: [agentId], references: [id], onDelete: Cascade)
-  companyId         String
-  company           Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
+  id        String  @id @default(cuid())
+  agentId   String  @unique
+  agent     User    @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
   dailyLimit        Int      @default(20)
   messagesSentToday Int      @default(0)
   resetAt           DateTime
-  
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([agentId])
 }
 
 model WarmupPlan {
-  id                 String   @id @default(cuid())
-  companyId          String
-  company            Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
-  weekNumber         Int
-  maxMessagesPerDay  Int
-  isActive           Boolean  @default(true)
-  
-  createdAt          DateTime @default(now())
-  
+  id        String  @id @default(cuid())
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  weekNumber        Int
+  maxMessagesPerDay Int
+  isActive          Boolean @default(true)
+
+  createdAt DateTime @default(now())
+
   @@index([companyId, weekNumber])
 }
 
 model Lead {
-  id            String       @id @default(cuid())
-  companyId     String
-  company       Company      @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
-  agentId       String?
-  agent         User?        @relation(fields: [agentId], references: [id], onDelete: SetNull)
-  
-  name          String
-  phone         String
-  email         String?
-  source        String?      // e.g., "WhatsApp", "Bitrix24", "Web Form"
-  status        LeadStatus   @default(NEW)
-  tags          String[]     @default([])
-  
+  id        String  @id @default(cuid())
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  agentId String?
+  agent   User?   @relation(fields: [agentId], references: [id], onDelete: SetNull)
+
+  name   String
+  phone  String
+  email  String?
+  source String? // e.g., "WhatsApp", "Bitrix24", "Web Form"
+  status LeadStatus @default(NEW)
+  tags   String[]   @default([])
+
   // Bitrix24 integration
-  bitrixLeadId  String?      @unique
-  bitrixDealId  String?
-  
+  bitrixLeadId String? @unique
+  bitrixDealId String?
+
   // Real estate specific fields (optional)
-  budget        String?
-  propertyType  String?      // e.g., "Villa", "Apartment", "Townhouse"
-  location      String?
-  bedrooms      Int?
-  
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
-  
+  budget       String?
+  propertyType String? // e.g., "Villa", "Apartment", "Townhouse"
+  location     String?
+  bedrooms     Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Relations
   conversations Conversation[]
-  
-  feedbacks     Feedback[]
-  feedbackRequests FeedbackRequest[]
+
+  feedbacks          Feedback[]
+  feedbackRequests   FeedbackRequest[]
   campaignRecipients CampaignRecipient[]
-  
+
   @@index([companyId])
   @@index([agentId])
   @@index([phone])
@@ -390,31 +390,31 @@ enum LeadStatus {
 }
 
 model Conversation {
-  id              String            @id @default(cuid())
-  companyId       String
-  company         Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
-  leadId          String
-  lead            Lead              @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  
-  agentId         String?
-  agent           User?             @relation(fields: [agentId], references: [id], onDelete: SetNull)
-  
-  whatsappNumber  String
-  lastMessageAt   DateTime          @default(now())
-  lastDirection   MessageDirection  @default(INBOUND)
-  status          ConversationStatus @default(ACTIVE)
-  
-  chatwootConversationId String?  // Chatwoot conversation ID
-  evolutionChatId        String?  // Evolution chat identifier
-  
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-  
+  id        String  @id @default(cuid())
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  leadId String
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  agentId String?
+  agent   User?   @relation(fields: [agentId], references: [id], onDelete: SetNull)
+
+  whatsappNumber String
+  lastMessageAt  DateTime           @default(now())
+  lastDirection  MessageDirection   @default(INBOUND)
+  status         ConversationStatus @default(ACTIVE)
+
+  chatwootConversationId String? // Chatwoot conversation ID
+  evolutionChatId        String? // Evolution chat identifier
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Relations
-  messages        Message[]
-  aiGenerations   AiMessageGeneration[]
-  
+  messages      Message[]
+  aiGenerations AiMessageGeneration[]
+
   @@index([companyId])
   @@index([leadId])
   @@index([agentId])
@@ -435,36 +435,36 @@ enum MessageDirection {
 }
 
 model Message {
-  id             String          @id @default(cuid())
+  id             String       @id @default(cuid())
   conversationId String
-  conversation   Conversation    @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  
-  senderId       String?         // User ID if outbound
-  sender         User?           @relation(fields: [senderId], references: [id], onDelete: SetNull)
-  
-  direction      MessageDirection
-  contentType    ContentType     @default(TEXT)
-  body           String          @db.Text
-  
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  senderId String? // User ID if outbound
+  sender   User?   @relation(fields: [senderId], references: [id], onDelete: SetNull)
+
+  direction   MessageDirection
+  contentType ContentType      @default(TEXT)
+  body        String           @db.Text
+
   // WhatsApp specific
-  wabaMessageId  String?         @unique
-  templateName   String?         // If sent via WhatsApp template
-  
+  wabaMessageId String? @unique
+  templateName  String? // If sent via WhatsApp template
+
   // Status tracking
-  sentAt         DateTime        @default(now())
-  deliveredAt    DateTime?
-  readAt         DateTime?
-  failedAt       DateTime?
-  errorMessage   String?
-  
+  sentAt       DateTime  @default(now())
+  deliveredAt  DateTime?
+  readAt       DateTime?
+  failedAt     DateTime?
+  errorMessage String?
+
   // AI Generation (if this message was AI-generated)
-  aiGenerations  AiMessageGeneration[]
-  
+  aiGenerations AiMessageGeneration[]
+
   // Delivery tracking (Phase 3)
   deliveryAttempts MessageDeliveryAttempt[]
-  
-  createdAt      DateTime        @default(now())
-  
+
+  createdAt DateTime @default(now())
+
   @@index([conversationId])
   @@index([wabaMessageId])
 }
@@ -474,18 +474,18 @@ model Message {
 // ============================================
 
 model MessageDeliveryAttempt {
-  id                String   @id @default(cuid())
+  id                String         @id @default(cuid())
   messageId         String
-  provider          String   // "META", "CHATWOOT", "EVOLUTION", "GENERIC"
+  provider          String // "META", "CHATWOOT", "EVOLUTION", "GENERIC"
   status            DeliveryStatus @default(PENDING)
-  externalMessageId String?  // Provider's message ID
-  errorMessage      String?  @db.Text
-  attemptNumber     Int      @default(1)
-  attemptedAt       DateTime @default(now())
+  externalMessageId String? // Provider's message ID
+  errorMessage      String?        @db.Text
+  attemptNumber     Int            @default(1)
+  attemptedAt       DateTime       @default(now())
   deliveredAt       DateTime?
-  
-  message           Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
-  
+
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
   @@index([messageId])
   @@index([status])
   @@index([provider])
@@ -504,18 +504,18 @@ enum DeliveryStatus {
 // ============================================
 
 model ProviderWebhookEvent {
-  id            String   @id @default(cuid())
-  companyId     String?
-  provider      String   // "META", "CHATWOOT", "EVOLUTION", "BITRIX", "GENERIC"
-  eventType     String   // "message.inbound", "status.update", "lead.update"
-  payloadJson   Json     // Full webhook payload (sensitive data masked)
-  status        WebhookProcessingStatus @default(PENDING)
-  processedAt   DateTime?
-  errorMessage  String?  @db.Text
-  receivedAt    DateTime @default(now())
-  
-  company       Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
+  id           String                  @id @default(cuid())
+  companyId    String?
+  provider     String // "META", "CHATWOOT", "EVOLUTION", "BITRIX", "GENERIC"
+  eventType    String // "message.inbound", "status.update", "lead.update"
+  payloadJson  Json // Full webhook payload (sensitive data masked)
+  status       WebhookProcessingStatus @default(PENDING)
+  processedAt  DateTime?
+  errorMessage String?                 @db.Text
+  receivedAt   DateTime                @default(now())
+
+  company Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
   @@index([provider, status])
   @@index([receivedAt])
   @@index([companyId])
@@ -540,26 +540,26 @@ enum ContentType {
 }
 
 model Template {
-  id                String         @id @default(cuid())
-  companyId         String
-  company           Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
-  metaTemplateName  String         // Name registered with Meta/WABA provider
-  displayName       String
-  language          String         @default("en") // ISO code: en, ar
-  category          TemplateCategory
-  status            TemplateStatus @default(PENDING)
-  
-  bodyPreview       String         @db.Text
-  headerType        String?        // TEXT, IMAGE, VIDEO, DOCUMENT
-  footerText        String?
-  buttons           Json?          // Array of button objects
-  
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
-  
-  @@index([companyId])
+  id        String  @id @default(cuid())
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  metaTemplateName String // Name registered with Meta/WABA provider
+  displayName      String
+  language         String           @default("en") // ISO code: en, ar
+  category         TemplateCategory
+  status           TemplateStatus   @default(PENDING)
+
+  bodyPreview String  @db.Text
+  headerType  String? // TEXT, IMAGE, VIDEO, DOCUMENT
+  footerText  String?
+  buttons     Json? // Array of button objects
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@unique([companyId, metaTemplateName])
+  @@index([companyId])
 }
 
 enum TemplateCategory {
@@ -576,62 +576,62 @@ enum TemplateStatus {
 }
 
 model WhatsAppNumber {
-  id                  String   @id @default(cuid())
-  companyId           String
-  company             Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
-  number              String   @unique // E.164 format: +971501234567
-  label               String   @default("Main") // "Main", "Leasing", "Sales", etc.
-  provider            String   // "meta", "twilio", "360dialog", "chatwoot", "evolution"
-  
+  id        String  @id @default(cuid())
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  number   String @unique // E.164 format: +971501234567
+  label    String @default("Main") // "Main", "Leasing", "Sales", etc.
+  provider String // "meta", "twilio", "360dialog", "chatwoot", "evolution"
+
   // Warm-up & quota management
-  dailyLimit          Int      @default(20)
-  messagesSentToday   Int      @default(0)
-  warmupWeek          Int      @default(1) // 1-4+
-  lastResetAt         DateTime @default(now())
-  
-  isActive            Boolean  @default(true)
-  
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-  
+  dailyLimit        Int      @default(20)
+  messagesSentToday Int      @default(0)
+  warmupWeek        Int      @default(1) // 1-4+
+  lastResetAt       DateTime @default(now())
+
+  isActive Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Relations
-  quotaLogs           QuotaLog[]
-  
+  quotaLogs QuotaLog[]
+
   @@index([companyId])
   @@index([number])
 }
 
 model QuotaLog {
-  id                String         @id @default(cuid())
-  companyId         String
-  whatsappNumberId  String
-  whatsappNumber    WhatsAppNumber @relation(fields: [whatsappNumberId], references: [id], onDelete: Cascade)
-  
-  date              DateTime       // Date at midnight for daily tracking
-  sentCount         Int            @default(0)
-  dailyLimit        Int            // Snapshot of limit at that time
-  
-  createdAt         DateTime       @default(now())
-  
+  id               String         @id @default(cuid())
+  companyId        String
+  whatsappNumberId String
+  whatsappNumber   WhatsAppNumber @relation(fields: [whatsappNumberId], references: [id], onDelete: Cascade)
+
+  date       DateTime // Date at midnight for daily tracking
+  sentCount  Int      @default(0)
+  dailyLimit Int // Snapshot of limit at that time
+
+  createdAt DateTime @default(now())
+
   @@unique([whatsappNumberId, date])
   @@index([companyId])
   @@index([date])
 }
 
 model WebhookEvent {
-  id          String   @id @default(cuid())
-  companyId   String?
-  source      WebhookSource
-  eventType   String   // e.g., "message.inbound", "message.status", "lead.created"
-  payload     Json     // Full webhook payload
-  
-  processed   Boolean  @default(false)
+  id        String        @id @default(cuid())
+  companyId String?
+  source    WebhookSource
+  eventType String // e.g., "message.inbound", "message.status", "lead.created"
+  payload   Json // Full webhook payload
+
+  processed   Boolean   @default(false)
   processedAt DateTime?
-  error       String?  @db.Text
-  
-  createdAt   DateTime @default(now())
-  
+  error       String?   @db.Text
+
+  createdAt DateTime @default(now())
+
   @@index([companyId])
   @@index([source])
   @@index([processed])
@@ -641,23 +641,23 @@ enum WebhookSource {
   WHATSAPP
   BITRIX
   STRIPE
-  CHATWOOT   // Added Chatwoot as webhook source
-  EVOLUTION  // Added Evolution as webhook source
+  CHATWOOT // Added Chatwoot as webhook source
+  EVOLUTION // Added Evolution as webhook source
 }
 
 model BitrixSyncLog {
-  id          String          @id @default(cuid())
-  companyId   String
-  leadId      String?
-  
-  direction   SyncDirection
-  action      String          // "create", "update", "sync"
-  status      SyncStatus
-  message     String?         @db.Text
-  payload     Json?           // Request/response data
-  
-  createdAt   DateTime        @default(now())
-  
+  id        String  @id @default(cuid())
+  companyId String
+  leadId    String?
+
+  direction SyncDirection
+  action    String // "create", "update", "sync"
+  status    SyncStatus
+  message   String?       @db.Text
+  payload   Json? // Request/response data
+
+  createdAt DateTime @default(now())
+
   @@index([companyId])
   @@index([leadId])
   @@index([status])
@@ -679,47 +679,47 @@ model PaymentEvent {
   company       Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
   companyId     String
   stripeEventId String   @unique
-  type          String   // e.g., checkout.session.completed, invoice.paid
-  rawPayload    Json     // Full Stripe event payload
+  type          String // e.g., checkout.session.completed, invoice.paid
+  rawPayload    Json // Full Stripe event payload
   createdAt     DateTime @default(now())
-  
+
   @@index([companyId])
   @@index([type])
 }
 
 model FeedbackTemplate {
-  id        String   @id @default(cuid())
-  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  id        String  @id @default(cuid())
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
   companyId String
 
-  name      String
-  language  String   // "en" | "ar" | "en-ar"
-  body      String   @db.Text  // Template with placeholders like {{client_name}}
-  
+  name     String
+  language String // "en" | "ar" | "en-ar"
+  body     String @db.Text // Template with placeholders like {{client_name}}
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
+
   @@index([companyId])
   @@index([language])
 }
 
 model FeedbackRequest {
-  id          String   @id @default(cuid())
-  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  companyId   String
+  id        String  @id @default(cuid())
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId String
 
-  lead        Lead?    @relation(fields: [leadId], references: [id], onDelete: SetNull)
-  leadId      String?  
-  
-  agent       User?    @relation(fields: [agentId], references: [id], onDelete: SetNull)
-  agentId     String?
+  lead   Lead?   @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  leadId String?
 
-  phone       String
-  status      String   @default("pending") // pending | answered | expired
-  rating      Int?
-  comment     String?  @db.Text
-  
-  createdAt   DateTime @default(now())
+  agent   User?   @relation(fields: [agentId], references: [id], onDelete: SetNull)
+  agentId String?
+
+  phone   String
+  status  String  @default("pending") // pending | answered | expired
+  rating  Int?
+  comment String? @db.Text
+
+  createdAt   DateTime  @default(now())
   requestedAt DateTime
   respondedAt DateTime?
 
@@ -730,24 +730,24 @@ model FeedbackRequest {
 }
 
 model Feedback {
-  id          String   @id @default(cuid())
-  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  companyId   String
+  id        String  @id @default(cuid())
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId String
 
-  agent       User     @relation(fields: [agentId], references: [id], onDelete: Cascade)
-  agentId     String
+  agent   User   @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  agentId String
 
-  lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
-  leadId      String
+  lead   Lead   @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  leadId String
 
-  rating      Int      // 1-5
-  comment     String?  @db.Text
-  source      String   @default("whatsapp") // whatsapp | manual
+  rating      Int // 1-5
+  comment     String?   @db.Text
+  source      String    @default("whatsapp") // whatsapp | manual
   requestedAt DateTime
   respondedAt DateTime?
 
-  createdAt   DateTime @default(now())
-  
+  createdAt DateTime @default(now())
+
   @@index([companyId])
   @@index([agentId])
   @@index([leadId])
@@ -755,64 +755,64 @@ model Feedback {
 }
 
 model Campaign {
-  id          String   @id @default(cuid())
-  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  companyId   String
+  id        String  @id @default(cuid())
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  companyId String
 
   name        String
   description String?  @db.Text
-  templateId  String   // Reference to WhatsApp template key
+  templateId  String // Reference to WhatsApp template key
   scheduledAt DateTime
   status      String   @default("scheduled") // scheduled | running | completed | paused | failed
 
-  createdBy   String   // userId
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  recipients  CampaignRecipient[]
-  
+  createdBy String // userId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  recipients CampaignRecipient[]
+
   @@index([companyId])
   @@index([status])
   @@index([scheduledAt])
 }
 
 model CampaignRecipient {
-  id          String   @id @default(cuid())
-  campaign    Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  campaignId  String
+  id         String   @id @default(cuid())
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  campaignId String
 
-  lead        Lead?    @relation(fields: [leadId], references: [id], onDelete: SetNull)
-  leadId      String?
+  lead   Lead?   @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  leadId String?
 
-  phone       String
-  name        String?
-  language    String?  // "en" | "ar"
+  phone    String
+  name     String?
+  language String? // "en" | "ar"
 
-  status      String   @default("pending") // pending | sent | delivered | failed
-  lastError   String?  @db.Text
-  sentAt      DateTime?
-  
-  createdAt   DateTime @default(now())
-  
+  status    String    @default("pending") // pending | sent | delivered | failed
+  lastError String?   @db.Text
+  sentAt    DateTime?
+
+  createdAt DateTime @default(now())
+
   @@index([campaignId])
   @@index([status])
   @@index([phone])
 }
 
 model Contact {
-  id          String   @id @default(cuid())
-  companyId   String
-  phone       String
-  name        String?
-  email       String?
-  language    String?  // "en" or "ar"
-  tags        String[] @default([])
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(cuid())
+  companyId String
+  phone     String
+  name      String?
+  email     String?
+  language  String? // "en" or "ar"
+  tags      String[] @default([])
 
-  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
   @@unique([companyId, phone])
   @@index([companyId])
   @@index([phone])
@@ -821,14 +821,14 @@ model Contact {
 model ImportBatch {
   id          String   @id @default(cuid())
   companyId   String
-  type        String   // "contacts" or "campaign"
+  type        String // "contacts" or "campaign"
   fileName    String
   rowCount    Int
   createdAt   DateTime @default(now())
   createdById String?
 
-  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
   @@index([companyId])
   @@index([type])
 }
@@ -838,32 +838,32 @@ model ImportBatch {
 // ============================================
 
 model JobQueue {
-  id              String    @id @default(cuid())
-  type            String    // "ai_generation", "campaign_send", "crm_sync", "lead_import"
-  payload         Json      // Job-specific data
-  
+  id      String @id @default(cuid())
+  type    String // "ai_generation", "campaign_send", "crm_sync", "lead_import"
+  payload Json // Job-specific data
+
   // Status tracking
-  status          JobStatus @default(PENDING)
-  priority        Int       @default(0)  // Higher = more urgent (0-10)
-  
+  status   JobStatus @default(PENDING)
+  priority Int       @default(0) // Higher = more urgent (0-10)
+
   // Retry logic
-  attempts        Int       @default(0)
-  maxAttempts     Int       @default(3)
-  lastError       String?   @db.Text
-  
+  attempts    Int     @default(0)
+  maxAttempts Int     @default(3)
+  lastError   String? @db.Text
+
   // Idempotency (prevent duplicate processing)
-  idempotencyKey  String?   @unique
-  
+  idempotencyKey String? @unique
+
   // Scheduling
-  scheduledFor    DateTime? // null = process immediately
-  startedAt       DateTime?
-  completedAt     DateTime?
-  
+  scheduledFor DateTime? // null = process immediately
+  startedAt    DateTime?
+  completedAt  DateTime?
+
   // Metadata
-  createdBy       String?   // userId
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  
+  createdBy String? // userId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@index([status, scheduledFor, priority])
   @@index([type, status])
   @@index([createdAt])
@@ -874,37 +874,37 @@ model JobQueue {
 // ============================================
 
 model AiPrompt {
-  id                  String   @id @default(cuid())
-  companyId           String?  // null = global platform prompt
-  version             String   // "v1.0.0", "v1.1.0", etc.
-  name                String   // "conversation_reply", "lead_qualification"
-  
+  id        String  @id @default(cuid())
+  companyId String? // null = global platform prompt
+  version   String // "v1.0.0", "v1.1.0", etc.
+  name      String // "conversation_reply", "lead_qualification"
+
   // Prompt Content
-  systemPrompt        String   @db.Text
-  userPromptTemplate  String   @db.Text
-  variables           String[] @default([])  // ["last_message", "lead_name", "property_type"]
-  
+  systemPrompt       String   @db.Text
+  userPromptTemplate String   @db.Text
+  variables          String[] @default([]) // ["last_message", "lead_name", "property_type"]
+
   // Status
-  isActive            Boolean  @default(false)
-  description         String?  @db.Text
-  
+  isActive    Boolean @default(false)
+  description String? @db.Text
+
   // Generation Config
-  model               String   @default("gpt-4-turbo")
-  temperature         Float    @default(0.7)
-  maxTokens           Int      @default(500)
-  
+  model       String @default("gpt-4-turbo")
+  temperature Float  @default(0.7)
+  maxTokens   Int    @default(500)
+
   // Audit Trail
-  createdBy           String?  // userId
-  activatedAt         DateTime?
-  deactivatedAt       DateTime?
-  
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-  
+  createdBy     String? // userId
+  activatedAt   DateTime?
+  deactivatedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   // Relations
-  company             Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  generations         AiMessageGeneration[] @relation("PromptVersionUsed")
-  
+  company     Company?              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  generations AiMessageGeneration[] @relation("PromptVersionUsed")
+
   @@unique([companyId, name, version])
   @@index([companyId, name, isActive])
   @@index([isActive])
@@ -915,60 +915,60 @@ model AiPrompt {
 // ============================================
 
 model AiMessageGeneration {
-  id                  String   @id @default(cuid())
-  conversationId      String
-  messageId           String?  // null until sent
-  
+  id             String  @id @default(cuid())
+  conversationId String
+  messageId      String? // null until sent
+
   // Prompt Tracking
-  promptId            String
-  promptVersion       String
-  
+  promptId      String
+  promptVersion String
+
   // AI Provider Details
-  provider            String   // "openai", "gemini"
-  model               String   // "gpt-4-turbo", "gpt-3.5-turbo"
-  
+  provider String // "openai", "gemini"
+  model    String // "gpt-4-turbo", "gpt-3.5-turbo"
+
   // Token Usage & Cost
-  inputTokens         Int
-  outputTokens        Int
-  totalTokens         Int
-  estimatedCostUsd    Float?
-  
+  inputTokens      Int
+  outputTokens     Int
+  totalTokens      Int
+  estimatedCostUsd Float?
+
   // Intent Classification
-  detectedIntent      String?
-  intentConfidence    Float?
-  entities            Json?    // Extracted entities: {budget: "1.5M", location: "Marina"}
-  sentiment           String?  // "positive", "neutral", "negative"
-  urgency             String?  // "low", "medium", "high"
-  
+  detectedIntent   String?
+  intentConfidence Float?
+  entities         Json? // Extracted entities: {budget: "1.5M", location: "Marina"}
+  sentiment        String? // "positive", "neutral", "negative"
+  urgency          String? // "low", "medium", "high"
+
   // Generated Content
-  draftMessage        String   @db.Text
-  
+  draftMessage String @db.Text
+
   // Safety Check Results
-  safetyPassed        Boolean
-  riskScore           Int?     // 0-100
-  violations          Json?    // Array of violation objects
-  
+  safetyPassed Boolean
+  riskScore    Int? // 0-100
+  violations   Json? // Array of violation objects
+
   // Approval Workflow
-  status              GenerationStatus @default(PENDING_APPROVAL)
-  wasApproved         Boolean?
-  approvedBy          String?  // userId
-  approvedAt          DateTime?
-  rejectionReason     String?  @db.Text
-  editedMessage       String?  @db.Text  // If agent edited before sending
-  
+  status          GenerationStatus @default(PENDING_APPROVAL)
+  wasApproved     Boolean?
+  approvedBy      String? // userId
+  approvedAt      DateTime?
+  rejectionReason String?          @db.Text
+  editedMessage   String?          @db.Text // If agent edited before sending
+
   // Send Tracking
-  sentAt              DateTime?
-  deliveredAt         DateTime?
-  readAt              DateTime?
-  
+  sentAt      DateTime?
+  deliveredAt DateTime?
+  readAt      DateTime?
+
   // Relations
-  conversation        Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  message             Message?     @relation(fields: [messageId], references: [id], onDelete: SetNull)
-  prompt              AiPrompt     @relation("PromptVersionUsed", fields: [promptId], references: [id], onDelete: Restrict)
-  safetyViolations    AiSafetyViolation[]
-  
-  createdAt           DateTime @default(now())
-  
+  conversation     Conversation        @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  message          Message?            @relation(fields: [messageId], references: [id], onDelete: SetNull)
+  prompt           AiPrompt            @relation("PromptVersionUsed", fields: [promptId], references: [id], onDelete: Restrict)
+  safetyViolations AiSafetyViolation[]
+
+  createdAt DateTime @default(now())
+
   @@index([conversationId])
   @@index([status])
   @@index([detectedIntent])
@@ -981,34 +981,34 @@ model AiMessageGeneration {
 // ====================================================================================
 
 model AiSafetyViolation {
-  id                  String   @id @default(cuid())
-  companyId           String
-  generationId        String?  // Link to AiMessageGeneration
-  messageId           String?  // If violation in existing message
-  
+  id           String  @id @default(cuid())
+  companyId    String
+  generationId String? // Link to AiMessageGeneration
+  messageId    String? // If violation in existing message
+
   // Violation Details
-  violationType       ViolationType
-  severity            ViolationSeverity
-  detectedText        String   @db.Text  // The problematic content
-  context             String?  @db.Text  // Surrounding context
-  ruleMatched         String?  // Which safety rule triggered
-  
+  violationType ViolationType
+  severity      ViolationSeverity
+  detectedText  String            @db.Text // The problematic content
+  context       String?           @db.Text // Surrounding context
+  ruleMatched   String? // Which safety rule triggered
+
   // Action Taken
-  wasBlocked          Boolean  // true if message prevented from sending
-  explanation         String   @db.Text
-  
+  wasBlocked  Boolean // true if message prevented from sending
+  explanation String  @db.Text
+
   // Human Review
-  reviewedBy          String?  // userId
-  reviewedAt          DateTime?
-  reviewDecision      String?  // "confirmed", "false_positive", "override"
-  reviewNotes         String?  @db.Text
-  
+  reviewedBy     String? // userId
+  reviewedAt     DateTime?
+  reviewDecision String? // "confirmed", "false_positive", "override"
+  reviewNotes    String?   @db.Text
+
   // Relations
-  company             Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  generation          AiMessageGeneration? @relation(fields: [generationId], references: [id], onDelete: Cascade)
-  
-  createdAt           DateTime @default(now())
-  
+  company    Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  generation AiMessageGeneration? @relation(fields: [generationId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
   @@index([companyId])
   @@index([violationType])
   @@index([severity])
@@ -1021,27 +1021,27 @@ model AiSafetyViolation {
 // ============================================
 
 model OptOutList {
-  id          String   @id @default(cuid())
-  companyId   String
-  phone       String   // E.164 format (+971501234567)
-  
+  id        String @id @default(cuid())
+  companyId String
+  phone     String // E.164 format (+971501234567)
+
   // Opt-out Details
-  reason      String?  // "user_request", "spam_report", "admin_block", "keyword_detected"
-  source      String?  // "whatsapp_message", "admin_action", "api"
-  keyword     String?  // The keyword that triggered opt-out (e.g., "stop")
-  
+  reason  String? // "user_request", "spam_report", "admin_block", "keyword_detected"
+  source  String? // "whatsapp_message", "admin_action", "api"
+  keyword String? // The keyword that triggered opt-out (e.g., "stop")
+
   // Audit Trail
-  optedOutAt  DateTime @default(now())
-  optedOutBy  String?  // userId or "system"
-  notes       String?  @db.Text
-  
+  optedOutAt DateTime @default(now())
+  optedOutBy String? // userId or "system"
+  notes      String?  @db.Text
+
   // Reversal (if user opts back in)
-  optedInAt   DateTime?
-  optedInBy   String?
-  
+  optedInAt DateTime?
+  optedInBy String?
+
   // Relations
-  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
   @@unique([companyId, phone])
   @@index([phone])
   @@index([companyId])
@@ -1052,71 +1052,71 @@ model OptOutList {
 // ============================================
 
 model CannedResponse {
-  id        String   @id @default(cuid())
+  id        String @id @default(cuid())
   companyId String
-  shortCode String   // Quick code to trigger response (e.g., "/villa")
-  content   String   @db.Text
-  
-  createdById String?  // User who created it
+  shortCode String // Quick code to trigger response (e.g., "/villa")
+  content   String @db.Text
+
+  createdById String? // User who created it
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
-  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  createdBy User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
-  
+
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdBy User?   @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
   @@unique([companyId, shortCode])
   @@index([companyId])
 }
 
 model Label {
-  id            String   @id @default(cuid())
+  id            String  @id @default(cuid())
   companyId     String
   title         String
   description   String?
-  color         String   @default("#1f93ff")
-  showOnSidebar Boolean  @default(true)
-  
+  color         String  @default("#1f93ff")
+  showOnSidebar Boolean @default(true)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
-  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
   @@index([companyId])
 }
 
 model Team {
-  id              String   @id @default(cuid())
+  id              String  @id @default(cuid())
   companyId       String
   name            String
   description     String?
-  allowAutoAssign Boolean  @default(true)
-  
+  allowAutoAssign Boolean @default(true)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
-  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  members   User[]   @relation("TeamMembers")
-  
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  members User[]  @relation("TeamMembers")
+
   @@index([companyId])
 }
 
 model AutomationRule {
-  id          String   @id @default(cuid())
+  id          String  @id @default(cuid())
   companyId   String
   name        String
   description String?
-  eventName   String   // "conversation_created", "message_created", etc.
-  conditions  Json     // Filter conditions
-  actions     Json     // Actions to perform
-  active      Boolean  @default(true)
-  
+  eventName   String // "conversation_created", "message_created", etc.
+  conditions  Json // Filter conditions
+  actions     Json // Actions to perform
+  active      Boolean @default(true)
+
   createdById String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
-  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  createdBy   User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
-  
+
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdBy User?   @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
   @@index([companyId])
   @@index([eventName])
   @@index([active])
@@ -1127,79 +1127,79 @@ model AutomationRule {
 // ============================================
 
 model Portal {
-  id              String   @id @default(cuid())
-  companyId       String
-  name            String
-  slug            String   @unique
-  description     String?  @db.Text
-  color           String   @default("#1f93ff")
-  headerText      String?
-  homepageLink    String?
-  customDomain    String?
-  logoUrl         String?
-  
-  config          Json?    // Locales, settings
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  company         Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  categories      Category[]
-  articles        Article[]
-  
+  id           String  @id @default(cuid())
+  companyId    String
+  name         String
+  slug         String  @unique
+  description  String? @db.Text
+  color        String  @default("#1f93ff")
+  headerText   String?
+  homepageLink String?
+  customDomain String?
+  logoUrl      String?
+
+  config Json? // Locales, settings
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company    Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  categories Category[]
+  articles   Article[]
+
   @@index([companyId])
   @@index([slug])
 }
 
 model Category {
-  id                    String   @id @default(cuid())
-  portalId              String
-  name                  String
-  slug                  String
-  description           String?  @db.Text
-  icon                  String?
-  position              Int      @default(0)
-  locale                String   @default("en")
-  
-  parentCategoryId      String?
-  associatedCategoryId  String?
-  
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-  
-  portal                Portal      @relation(fields: [portalId], references: [id], onDelete: Cascade)
-  parentCategory        Category?   @relation("CategoryHierarchy", fields: [parentCategoryId], references: [id])
-  subCategories         Category[]  @relation("CategoryHierarchy")
-  articles              Article[]
-  
+  id          String  @id @default(cuid())
+  portalId    String
+  name        String
+  slug        String
+  description String? @db.Text
+  icon        String?
+  position    Int     @default(0)
+  locale      String  @default("en")
+
+  parentCategoryId     String?
+  associatedCategoryId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  portal         Portal     @relation(fields: [portalId], references: [id], onDelete: Cascade)
+  parentCategory Category?  @relation("CategoryHierarchy", fields: [parentCategoryId], references: [id])
+  subCategories  Category[] @relation("CategoryHierarchy")
+  articles       Article[]
+
   @@unique([portalId, slug, locale])
   @@index([portalId])
 }
 
 model Article {
-  id                    String   @id @default(cuid())
-  portalId              String
-  categoryId            String?
-  title                 String
-  slug                  String
-  content               String   @db.Text
-  description           String?  @db.Text
-  authorId              String?
-  status                ArticleStatus @default(DRAFT)
-  locale                String   @default("en")
-  position              Int      @default(0)
-  
-  meta                  Json?    // SEO metadata
-  associatedArticleId   String?
-  
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-  publishedAt           DateTime?
-  
-  portal                Portal    @relation(fields: [portalId], references: [id], onDelete: Cascade)
-  category              Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  author                User?     @relation(fields: [authorId], references: [id], onDelete: SetNull)
-  
+  id          String        @id @default(cuid())
+  portalId    String
+  categoryId  String?
+  title       String
+  slug        String
+  content     String        @db.Text
+  description String?       @db.Text
+  authorId    String?
+  status      ArticleStatus @default(DRAFT)
+  locale      String        @default("en")
+  position    Int           @default(0)
+
+  meta                Json? // SEO metadata
+  associatedArticleId String?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  publishedAt DateTime?
+
+  portal   Portal    @relation(fields: [portalId], references: [id], onDelete: Cascade)
+  category Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  author   User?     @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
   @@unique([portalId, slug, locale])
   @@index([portalId])
   @@index([categoryId])
@@ -1217,23 +1217,23 @@ enum ArticleStatus {
 // ============================================
 
 model CustomAttributeDefinition {
-  id                      String   @id @default(cuid())
-  companyId               String
-  attributeKey            String
-  attributeDisplayName    String
-  attributeDescription    String?
-  attributeModel          AttributeModel
-  attributeDisplayType    AttributeDisplayType
-  attributeValues         String[] @default([])
-  
-  regexPattern            String?
-  regexCue                String?
-  
-  createdAt               DateTime @default(now())
-  updatedAt               DateTime @updatedAt
-  
-  company                 Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
+  id                   String               @id @default(cuid())
+  companyId            String
+  attributeKey         String
+  attributeDisplayName String
+  attributeDescription String?
+  attributeModel       AttributeModel
+  attributeDisplayType AttributeDisplayType
+  attributeValues      String[]             @default([])
+
+  regexPattern String?
+  regexCue     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
   @@unique([companyId, attributeKey, attributeModel])
   @@index([companyId])
 }
@@ -1258,21 +1258,21 @@ enum AttributeDisplayType {
 // ============================================
 
 model AgentBot {
-  id              String   @id @default(cuid())
-  companyId       String?
-  name            String
-  description     String?  @db.Text
-  outgoingUrl     String?  // Webhook URL for bot
-  avatarUrl       String?
-  botType         BotType  @default(WEBHOOK)
-  botConfig       Json?
-  accessToken     String   @unique @default(cuid())
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  company         Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
+  id          String  @id @default(cuid())
+  companyId   String?
+  name        String
+  description String? @db.Text
+  outgoingUrl String? // Webhook URL for bot
+  avatarUrl   String?
+  botType     BotType @default(WEBHOOK)
+  botConfig   Json?
+  accessToken String  @unique @default(cuid())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
   @@index([companyId])
 }
 
@@ -1287,23 +1287,23 @@ enum BotType {
 // ============================================
 
 model Macro {
-  id              String   @id @default(cuid())
-  companyId       String
-  name            String
-  description     String?
-  actions         Json     // Action sequence
-  visibility      MacroVisibility @default(GLOBAL)
-  
-  createdById     String?
-  updatedById     String?
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  company         Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  createdBy       User?    @relation("MacroCreator", fields: [createdById], references: [id], onDelete: SetNull)
-  updatedBy       User?    @relation("MacroUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
-  
+  id          String          @id @default(cuid())
+  companyId   String
+  name        String
+  description String?
+  actions     Json // Action sequence
+  visibility  MacroVisibility @default(GLOBAL)
+
+  createdById String?
+  updatedById String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdBy User?   @relation("MacroCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy User?   @relation("MacroUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
+
   @@index([companyId])
 }
 
@@ -1318,40 +1318,40 @@ enum MacroVisibility {
 // ============================================
 
 model NotificationSetting {
-  id                      String   @id @default(cuid())
-  userId                  String
-  companyId               String
-  selectedEmailFlags      String[] @default([])
-  selectedPushFlags       String[] @default([])
-  
-  createdAt               DateTime @default(now())
-  updatedAt               DateTime @updatedAt
-  
-  user                    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  company                 Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
+  id                 String   @id @default(cuid())
+  userId             String
+  companyId          String
+  selectedEmailFlags String[] @default([])
+  selectedPushFlags  String[] @default([])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
   @@unique([userId, companyId])
   @@index([userId])
   @@index([companyId])
 }
 
 model Notification {
-  id              String   @id @default(cuid())
-  userId          String
-  companyId       String
+  id               String    @id @default(cuid())
+  userId           String
+  companyId        String
   notificationType String
   primaryActorType String?
   primaryActorId   String?
-  message         String   @db.Text
-  readAt          DateTime?
-  snoozedUntil    DateTime?
-  meta            Json?
-  
-  createdAt       DateTime @default(now())
-  
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  company         Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
+  message          String    @db.Text
+  readAt           DateTime?
+  snoozedUntil     DateTime?
+  meta             Json?
+
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
   @@index([userId])
   @@index([companyId])
   @@index([readAt])
@@ -1362,19 +1362,19 @@ model Notification {
 // ============================================
 
 model Webhook {
-  id              String   @id @default(cuid())
-  companyId       String
-  inboxId         String?
-  name            String
-  url             String
-  subscriptions   String[] @default([])
-  active          Boolean  @default(true)
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  company         Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
+  id            String   @id @default(cuid())
+  companyId     String
+  inboxId       String?
+  name          String
+  url           String
+  subscriptions String[] @default([])
+  active        Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
   @@index([companyId])
 }
 
@@ -1383,20 +1383,20 @@ model Webhook {
 // ============================================
 
 model WorkingHour {
-  id              String   @id @default(cuid())
-  companyId       String
-  dayOfWeek       Int      // 0-6 (Sunday-Saturday)
-  openHour        Int
-  openMinutes     Int
-  closeHour       Int
-  closeMinutes    Int
-  closedAllDay    Boolean  @default(false)
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  company         Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
+  id           String  @id @default(cuid())
+  companyId    String
+  dayOfWeek    Int // 0-6 (Sunday-Saturday)
+  openHour     Int
+  openMinutes  Int
+  closeHour    Int
+  closeMinutes Int
+  closedAllDay Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
   @@unique([companyId, dayOfWeek])
   @@index([companyId])
 }
@@ -1406,18 +1406,18 @@ model WorkingHour {
 // ============================================
 
 model DashboardApp {
-  id              String   @id @default(cuid())
-  companyId       String
-  userId          String
-  title           String
-  content         Json     // { type: 'url' | 'iframe', url: string }
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  company         Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  id        String @id @default(cuid())
+  companyId String
+  userId    String
+  title     String
+  content   Json // { type: 'url' | 'iframe', url: string }
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([companyId])
   @@index([userId])
 }
@@ -1427,21 +1427,21 @@ model DashboardApp {
 // ============================================
 
 model OAuthIntegration {
-  id              String   @id @default(cuid())
-  companyId       String
-  provider        OAuthProvider
-  accessToken     String   @db.Text
-  refreshToken    String?  @db.Text
-  expiresAt       DateTime?
-  scope           String?
+  id                String        @id @default(cuid())
+  companyId         String
+  provider          OAuthProvider
+  accessToken       String        @db.Text
+  refreshToken      String?       @db.Text
+  expiresAt         DateTime?
+  scope             String?
   providerAccountId String?
-  metadata        Json?
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  
-  company         Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  
+  metadata          Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
   @@unique([companyId, provider])
   @@index([companyId])
 }
@@ -1457,21 +1457,20 @@ enum OAuthProvider {
 // ============================================
 
 model Upload {
-  id              String   @id @default(cuid())
-  companyId       String
-  userId          String
-  filename        String
-  fileUrl         String
-  fileType        String
-  fileSize        Int
-  blobId          String?
-  
-  createdAt       DateTime @default(now())
-  
-  company         Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  id        String  @id @default(cuid())
+  companyId String
+  userId    String
+  filename  String
+  fileUrl   String
+  fileType  String
+  fileSize  Int
+  blobId    String?
+
+  createdAt DateTime @default(now())
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@index([companyId])
   @@index([userId])
 }
-
