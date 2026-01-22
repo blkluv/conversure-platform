@@ -4,10 +4,12 @@
  * Starts and manages all BullMQ workers for async job processing
  */
 
+import { Worker } from 'bullmq';
 import { createWhatsAppWebhookWorker } from './whatsappWebhookWorker';
+import { createEmailWorker } from './emailWorker';
 
 export function startWorkers() {
-    const workers = [];
+    const workers: Worker[] = [];
 
     console.log('[Workers] Starting BullMQ workers...');
 
@@ -18,10 +20,16 @@ export function startWorkers() {
         console.log('[Workers] WhatsApp webhook worker started');
     }
 
+    // Start Email worker
+    const emailWorker = createEmailWorker();
+    if (emailWorker) {
+        workers.push(emailWorker);
+        console.log('[Workers] Email worker started');
+    }
+
     // TODO: Add more workers as needed
     // - AI generation worker
     // - Campaign execution worker
-    // - Email worker
     // - etc.
 
     // Graceful shutdown

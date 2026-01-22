@@ -117,3 +117,96 @@ export async function authenticateUser(email: string, password: string): Promise
 
   return user
 }
+
+/**
+ * Require specific role(s) - throws if user doesn't have required role
+ */
+export async function requireRole(allowedRoles: string[]): Promise<SessionUser> {
+  const user = await getCurrentUser()
+
+  if (!user) {
+    throw new Error('Unauthorized: Authentication required')
+  }
+
+  if (!allowedRoles.includes(user.role)) {
+    throw new Error(`Forbidden: Required role(s): ${allowedRoles.join(', ')}`)
+  }
+
+  return user
+}
+
+/**
+ * Require company admin role
+ */
+export async function requireCompanyAdmin(): Promise<SessionUser> {
+  return requireRole(['COMPANY_ADMIN', 'SUPER_ADMIN'])
+}
+
+/**
+ * Get current user's company ID
+ */
+export async function getCompanyId(): Promise<string> {
+  const user = await requireAuth()
+  return user.companyId
+}
+
+/**
+ * Verify user belongs to specified company (multi-tenant isolation)
+ */
+export async function verifyCompanyAccess(companyId: string): Promise<void> {
+  const user = await requireAuth()
+
+  if (user.companyId !== companyId) {
+    throw new Error('Forbidden: Access denied to this company resource')
+  }
+}
+
+/**
+ * Check if user has permission for action
+ * Extends RBAC with custom permissions
+ */
+export async function hasPermission(permission: string): Promise<boolean> {
+  const user = await getCurrentUser()
+  if (!user) return false
+
+  const rolePermissions: Record<string, string[]> = {
+    SUPER_ADMIN: ['*'], // All permissions
+    COMPANY_ADMIN: [
+      'users:manage',
+      'company:edit',
+      'leads:manage',
+      'campaigns:manage',
+      'integrations:manage',
+      'billing:view'
+    ],
+    AGENT: [
+      'leads:view',
+      'leads:edit',
+      'conversations:manage',
+      'messages:send'
+    ],
+    VIEWER: [
+      'leads:view',
+      'conversations:view',
+      'reports:view'
+    ]
+  }
+
+  const permissions = rolePermissions[user.role] || []
+  return permissions.includes('*') || permissions.includes(permission)
+}
+
+/**
+ * Require specific permission
+ */
+export async function requirePermission(permission: string): Promise<SessionUser> {
+  const user = await requireAuth()
+  const allowed = await hasPermission(permission)
+
+  if (!allowed) {
+    throw new Error(`Forbidden: Missing permission '${permission}'`)
+  }
+
+  return user
+}
+
