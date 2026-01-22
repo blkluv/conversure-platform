@@ -67,7 +67,7 @@ export function DataTable<TData, TValue>({
         ? [
             {
                 id: 'select',
-                header: ({ table }) => (
+                header: ({ table }: { table: any }) => (
                     <Checkbox
                         checked={table.getIsAllPageRowsSelected()}
                         onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
