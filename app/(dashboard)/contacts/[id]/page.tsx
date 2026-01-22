@@ -181,8 +181,8 @@ export default async function ContactDetailPage({ params }: PageProps) {
                                                         </CardDescription>
                                                     </div>
                                                     <Badge variant={
-                                                        conversation.status === 'PENDING' ? 'default' :
-                                                            conversation.status === 'RESOLVED' ? 'secondary' : 'outline'
+                                                        conversation.status === 'ACTIVE' ? 'default' :
+                                                            conversation.status === 'ARCHIVED' ? 'secondary' : 'outline'
                                                     }>
                                                         {conversation.status}
                                                     </Badge>
