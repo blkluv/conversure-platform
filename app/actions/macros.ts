@@ -48,7 +48,7 @@ export async function executeMacro(macroId: string, conversationIds: string[]) {
 
                 if (actions.assign_agent) updates.agentId = actions.assign_agent
                 if (actions.change_status) updates.status = actions.change_status
-                if (actions.set_priority) updates.priority = actions.set_priority
+                // if (actions.set_priority) updates.priority = actions.set_priority // Priority field doesn't exist
 
                 if (Object.keys(updates).length > 0) {
                     await db.conversation.update({
@@ -133,7 +133,7 @@ export async function autoAssignConversation(conversationId: string) {
                     select: {
                         conversations: {
                             where: {
-                                status: { in: ['OPEN', 'PENDING'] }
+                                status: { in: ['ACTIVE', 'PENDING'] }
                             }
                         }
                     }
