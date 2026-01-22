@@ -268,7 +268,10 @@ export async function createMacro(data: z.infer<typeof macroSchema>) {
             data: {
                 companyId: user.companyId,
                 createdById: user.id,
-                ...validated
+                name: validated.name,
+                description: validated.description,
+                actions: validated.actions,
+                isActive: true
             }
         })
 
