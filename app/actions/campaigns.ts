@@ -61,12 +61,10 @@ export async function createCampaign(data: CampaignInput) {
                 companyId: user.companyId,
                 name: validated.title,
                 description: validated.description,
-                message: validated.message,
-                scheduledAt: validated.scheduledAt ? new Date(validated.scheduledAt) : null,
-                status: validated.scheduledAt ? 'SCHEDULED' : 'DRAFT',
-                audienceType: validated.audienceType,
-                audienceIds: validated.audienceIds || [],
-                tags: validated.tags || []
+                templateId: validated.message, // Template key reference
+                scheduledAt: validated.scheduledAt ? new Date(validated.scheduledAt) : new Date(),
+                status: validated.scheduledAt ? 'scheduled' : 'paused',
+                createdBy: user.id
             }
         })
 
@@ -106,13 +104,10 @@ export async function updateCampaign(id: string, data: Partial<CampaignInput>) {
         const updated = await db.campaign.update({
             where: { id },
             data: {
-                name: data.title,
-                description: data.description,
-                message: data.message,
-                ...(data.scheduledAt && { scheduledAt: new Date(data.scheduledAt) }),
-                audienceType: data.audienceType,
-                audienceIds: data.audienceIds,
-                tags: data.tags
+                ...(data.title && { name: data.title }),
+                ...(data.description && { description: data.description }),
+                ...(data.message && { templateId: data.message }),
+                ...(data.scheduledAt && { scheduledAt: new Date(data.scheduledAt) })
             }
         })
 
