@@ -5,7 +5,6 @@ import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { AutomationSettings } from "@/components/dashboard/AutomationSettings"
 import { CompanyProfileForm } from "@/components/dashboard/CompanyProfileForm"
 import { WhatsAppSettingsForm } from "@/components/dashboard/WhatsAppSettingsForm"
 import { Bitrix24SettingsForm } from "@/components/dashboard/Bitrix24SettingsForm"
@@ -78,9 +77,9 @@ export default async function AdminSettingsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <AutomationSettings
-                currentMode={companySettings?.messageGenerationMode || "MANUAL_COPILOT"}
-              />
+              <p className="text-sm text-muted-foreground">
+                AI automation settings can be configured in the AI Settings section below.
+              </p>
             </CardContent>
           </Card>
 

@@ -84,6 +84,21 @@ model Company {
   teams                 Team[]
   automationRules       AutomationRule[]
   
+  // Knowledge Base
+  portals               Portal[]
+  
+  // Advanced Features
+  customAttributeDefinitions CustomAttributeDefinition[]
+  agentBots             AgentBot[]
+  macros                Macro[]
+  notificationSettings  NotificationSetting[]
+  notifications         Notification[]
+  webhooks              Webhook[]
+  workingHours          WorkingHour[]
+  dashboardApps         DashboardApp[]
+  oauthIntegrations     OAuthIntegration[]
+  uploads               Upload[]
+  
   @@index([whatsappBusinessNumber])
 }
 
@@ -268,6 +283,17 @@ model User {
   teams               Team[]             @relation("TeamMembers")
   createdCanned       CannedResponse[]
   createdAutomations  AutomationRule[]
+  
+  // Knowledge Base
+  articles            Article[]
+  
+  // Advanced Features
+  createdMacros       Macro[]            @relation("MacroCreator")
+  updatedMacros       Macro[]            @relation("MacroUpdater")
+  notificationSettings NotificationSetting[]
+  notifications       Notification[]
+  dashboardApps       DashboardApp[]
+  uploads             Upload[]
   
   @@index([email])
   @@index([companyId])
@@ -1094,5 +1120,358 @@ model AutomationRule {
   @@index([companyId])
   @@index([eventName])
   @@index([active])
+}
+
+// ============================================
+// ARTICLES & KNOWLEDGE BASE
+// ============================================
+
+model Portal {
+  id              String   @id @default(cuid())
+  companyId       String
+  name            String
+  slug            String   @unique
+  description     String?  @db.Text
+  color           String   @default("#1f93ff")
+  headerText      String?
+  homepageLink    String?
+  customDomain    String?
+  logoUrl         String?
+  
+  config          Json?    // Locales, settings
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  company         Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  categories      Category[]
+  articles        Article[]
+  
+  @@index([companyId])
+  @@index([slug])
+}
+
+model Category {
+  id                    String   @id @default(cuid())
+  portalId              String
+  name                  String
+  slug                  String
+  description           String?  @db.Text
+  icon                  String?
+  position              Int      @default(0)
+  locale                String   @default("en")
+  
+  parentCategoryId      String?
+  associatedCategoryId  String?
+  
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  
+  portal                Portal      @relation(fields: [portalId], references: [id], onDelete: Cascade)
+  parentCategory        Category?   @relation("CategoryHierarchy", fields: [parentCategoryId], references: [id])
+  subCategories         Category[]  @relation("CategoryHierarchy")
+  articles              Article[]
+  
+  @@unique([portalId, slug, locale])
+  @@index([portalId])
+}
+
+model Article {
+  id                    String   @id @default(cuid())
+  portalId              String
+  categoryId            String?
+  title                 String
+  slug                  String
+  content               String   @db.Text
+  description           String?  @db.Text
+  authorId              String?
+  status                ArticleStatus @default(DRAFT)
+  locale                String   @default("en")
+  position              Int      @default(0)
+  
+  meta                  Json?    // SEO metadata
+  associatedArticleId   String?
+  
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  publishedAt           DateTime?
+  
+  portal                Portal    @relation(fields: [portalId], references: [id], onDelete: Cascade)
+  category              Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  author                User?     @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  
+  @@unique([portalId, slug, locale])
+  @@index([portalId])
+  @@index([categoryId])
+  @@index([status])
+}
+
+enum ArticleStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+// ============================================
+// CUSTOM ATTRIBUTES
+// ============================================
+
+model CustomAttributeDefinition {
+  id                      String   @id @default(cuid())
+  companyId               String
+  attributeKey            String
+  attributeDisplayName    String
+  attributeDescription    String?
+  attributeModel          AttributeModel
+  attributeDisplayType    AttributeDisplayType
+  attributeValues         String[] @default([])
+  
+  regexPattern            String?
+  regexCue                String?
+  
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+  
+  company                 Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  @@unique([companyId, attributeKey, attributeModel])
+  @@index([companyId])
+}
+
+enum AttributeModel {
+  CONTACT
+  CONVERSATION
+  COMPANY
+}
+
+enum AttributeDisplayType {
+  TEXT
+  NUMBER
+  DATE
+  CHECKBOX
+  LIST
+  LINK
+}
+
+// ============================================
+// AGENT BOTS
+// ============================================
+
+model AgentBot {
+  id              String   @id @default(cuid())
+  companyId       String?
+  name            String
+  description     String?  @db.Text
+  outgoingUrl     String?  // Webhook URL for bot
+  avatarUrl       String?
+  botType         BotType  @default(WEBHOOK)
+  botConfig       Json?
+  accessToken     String   @unique @default(cuid())
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  company         Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  @@index([companyId])
+}
+
+enum BotType {
+  WEBHOOK
+  CSML
+  DIALOGFLOW
+}
+
+// ============================================
+// MACROS (SAVED ACTION SEQUENCES)
+// ============================================
+
+model Macro {
+  id              String   @id @default(cuid())
+  companyId       String
+  name            String
+  description     String?
+  actions         Json     // Action sequence
+  visibility      MacroVisibility @default(GLOBAL)
+  
+  createdById     String?
+  updatedById     String?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  company         Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdBy       User?    @relation("MacroCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  updatedBy       User?    @relation("MacroUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
+  
+  @@index([companyId])
+}
+
+enum MacroVisibility {
+  GLOBAL
+  PERSONAL
+  TEAM
+}
+
+// ============================================
+// NOTIFICATIONS
+// ============================================
+
+model NotificationSetting {
+  id                      String   @id @default(cuid())
+  userId                  String
+  companyId               String
+  selectedEmailFlags      String[] @default([])
+  selectedPushFlags       String[] @default([])
+  
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+  
+  user                    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company                 Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, companyId])
+  @@index([userId])
+  @@index([companyId])
+}
+
+model Notification {
+  id              String   @id @default(cuid())
+  userId          String
+  companyId       String
+  notificationType String
+  primaryActorType String?
+  primaryActorId   String?
+  message         String   @db.Text
+  readAt          DateTime?
+  snoozedUntil    DateTime?
+  meta            Json?
+  
+  createdAt       DateTime @default(now())
+  
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  company         Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([companyId])
+  @@index([readAt])
+}
+
+// ============================================
+// WEBHOOKS
+// ============================================
+
+model Webhook {
+  id              String   @id @default(cuid())
+  companyId       String
+  inboxId         String?
+  name            String
+  url             String
+  subscriptions   String[] @default([])
+  active          Boolean  @default(true)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  company         Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  @@index([companyId])
+}
+
+// ============================================
+// WORKING HOURS
+// ============================================
+
+model WorkingHour {
+  id              String   @id @default(cuid())
+  companyId       String
+  dayOfWeek       Int      // 0-6 (Sunday-Saturday)
+  openHour        Int
+  openMinutes     Int
+  closeHour       Int
+  closeMinutes    Int
+  closedAllDay    Boolean  @default(false)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  company         Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  @@unique([companyId, dayOfWeek])
+  @@index([companyId])
+}
+
+// ============================================
+// DASHBOARD APPS
+// ============================================
+
+model DashboardApp {
+  id              String   @id @default(cuid())
+  companyId       String
+  userId          String
+  title           String
+  content         Json     // { type: 'url' | 'iframe', url: string }
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  company         Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([companyId])
+  @@index([userId])
+}
+
+// ============================================
+// OAUTH INTEGRATIONS
+// ============================================
+
+model OAuthIntegration {
+  id              String   @id @default(cuid())
+  companyId       String
+  provider        OAuthProvider
+  accessToken     String   @db.Text
+  refreshToken    String?  @db.Text
+  expiresAt       DateTime?
+  scope           String?
+  providerAccountId String?
+  metadata        Json?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  company         Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  
+  @@unique([companyId, provider])
+  @@index([companyId])
+}
+
+enum OAuthProvider {
+  GOOGLE
+  MICROSOFT
+  FACEBOOK
+}
+
+// ============================================
+// FILE UPLOADS
+// ============================================
+
+model Upload {
+  id              String   @id @default(cuid())
+  companyId       String
+  userId          String
+  filename        String
+  fileUrl         String
+  fileType        String
+  fileSize        Int
+  blobId          String?
+  
+  createdAt       DateTime @default(now())
+  
+  company         Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([companyId])
+  @@index([userId])
 }
 

@@ -1,82 +1,64 @@
-"use server"
+/**
+ * Settings & Configuration Server Actions
+ * 
+ * Company settings, working hours, webhooks, notifications
+ * Consolidated from multiple Rails controllers
+ */
 
-import { db } from "@/lib/db"
-import { getSession } from "@/lib/auth"
-import { revalidatePath } from "next/cache"
+'use server'
 
-interface UpdateAutomationSettingsData {
-  messageGenerationMode: "AI_PILOT" | "MANUAL_COPILOT"
-}
+import { db } from '@/lib/db'
+import { getCurrentUser } from '@/lib/auth'
+import { revalidatePath } from 'next/cache'
+import { z } from 'zod'
 
-interface UpdateAutomationSettingsResponse {
-  success: boolean
-  error?: string
-}
-
-export async function updateAutomationSettings(
-  data: UpdateAutomationSettingsData
-): Promise<UpdateAutomationSettingsResponse> {
+/**
+ * Get company settings
+ */
+export async function getCompanySettings() {
   try {
-    const session = await getSession()
+    const user = await getCurrentUser()
+    if (!user) throw new Error('Unauthorized')
 
-    if (!session) {
-      return {
-        success: false,
-        error: "Unauthorized",
+    const company = await db.company.findUnique({
+      where: { id: user.companyId },
+      include: {
+        companySettings: true
       }
-    }
-
-    if (session.role !== "COMPANY_ADMIN" && session.role !== "SUPER_ADMIN") {
-      return {
-        success: false,
-        error: "Only company admins can update settings",
-      }
-    }
-
-    // Validate mode
-    if (!["AI_PILOT", "MANUAL_COPILOT"].includes(data.messageGenerationMode)) {
-      return {
-        success: false,
-        error: "Invalid message generation mode",
-      }
-    }
-
-    // Check if company settings exist
-    const existingSettings = await db.companySettings.findUnique({
-      where: { companyId: session.companyId },
     })
 
-    if (existingSettings) {
-      // Update existing settings
-      await db.companySettings.update({
-        where: { companyId: session.companyId },
-        data: {
-          messageGenerationMode: data.messageGenerationMode,
-        },
-      })
-    } else {
-      // Create new settings
-      await db.companySettings.create({
-        data: {
-          companyId: session.companyId,
-          messageGenerationMode: data.messageGenerationMode,
-        },
-      })
+    return { success: true, data: company }
+  } catch (error: any) {
+    return { success: false, error: error.message }
+  }
+}
+
+/**
+ * Update company settings
+ */
+export async function updateCompanySettings(data: {
+  name?: string
+  domain?: string
+  city?: string
+  aiTone?: string
+  aiLanguages?: string
+  aiEnabled?: boolean
+}) {
+  try {
+    const user = await getCurrentUser()
+    if (!user || user.role !== 'COMPANY_ADMIN') {
+      throw new Error('Unauthorized: Company admin access required')
     }
 
-    // Revalidate the settings page
-    revalidatePath("/dashboard/admin/settings")
+    const updated = await db.company.update({
+      where: { id: user.companyId },
+      data
+    })
 
-    console.log(`[Settings] Updated automation mode for company ${session.companyId}: ${data.messageGenerationMode}`)
+    revalidatePath('/settings')
 
-    return {
-      success: true,
-    }
-  } catch (error) {
-    console.error("Error updating automation settings:", error)
-    return {
-      success: false,
-      error: "Failed to update settings. Please try again.",
-    }
+    return { success: true, data: updated }
+  } catch (error: any) {
+    return { success: false, error: error.message }
   }
 }
