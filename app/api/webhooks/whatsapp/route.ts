@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
       const queue = QueueFactory.getQueue();
 
       if (QueueFactory.isBullMQ()) {
-        await queue.addJob('whatsapp:webhook', {
+        await (queue as any).addJob('whatsapp:webhook', {
           eventId: webhookEvent.id,
           provider: detectProvider(body)
         }, {

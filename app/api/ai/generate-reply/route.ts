@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
         // 7. Return job information
         return NextResponse.json({
             success: true,
-            jobId: job.id,
+            jobId: typeof job === 'string' ? job : job.id,
             status: 'queued',
             message: 'AI generation job enqueued successfully',
             estimatedWaitTime: '2-5 seconds',
