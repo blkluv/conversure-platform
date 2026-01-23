@@ -80,16 +80,6 @@ export async function requireAuth(): Promise<SessionUser> {
   return session
 }
 
-export async function requireRole(allowedRoles: string[]): Promise<SessionUser> {
-  const session = await requireAuth()
-
-  if (!allowedRoles.includes(session.role)) {
-    throw new Error("Forbidden")
-  }
-
-  return session
-}
-
 // Password hashing utilities
 export async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, 10)
