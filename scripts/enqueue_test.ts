@@ -31,10 +31,13 @@ async function runTests() {
         );
 
         if (job1) {
-            console.log('✅ Job created:', job1.id);
-            console.log('   Type:', job1.type);
-            console.log('   Priority:', job1.priority);
-            console.log('   Status:', job1.status);
+            const jobId = typeof job1 === 'string' ? job1 : job1.id;
+            console.log('✅ Job created:', jobId);
+            if (typeof job1 !== 'string') {
+                console.log('   Type:', job1.type);
+                console.log('   Priority:', job1.priority);
+                console.log('   Status:', job1.status);
+            }
         } else {
             console.log('❌ Failed to create job');
         }
